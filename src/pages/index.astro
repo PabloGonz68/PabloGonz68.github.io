@@ -1,25 +1,39 @@
 ---
-import '../styles/global.css';
-// Component Imports
-import Button from '../components/Button.astro';
-
-// Full Astro Component Syntax:
-// https://docs.astro.build/basics/astro-components/
+import Portfolio from "../components/Portfolio";
+import "../styles/global.css";
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro + TailwindCSS</title>
-	</head>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#04060f" />
 
-	<body>
-		<div class="grid place-items-center h-screen content-center">
-			<Button>Tailwind Button in Astro!</Button>
-			<a href="/markdown-page" class="p-4 underline">Markdown is also supported...</a>
-		</div>
-	</body>
+    <!-- SEO -->
+    <title>Pablo González Silva · Full Stack Developer & Ciberseguridad</title>
+    <meta
+      name="description"
+      content="Portfolio de Pablo González Silva, desarrollador Full Stack especializado en React, Spring Boot, Java y ciberseguridad. Disponible para proyectos."
+    />
+    <meta name="author" content="Pablo González Silva" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Pablo González Silva · Full Stack Developer" />
+    <meta property="og:description" content="Desarrollador Full Stack con experiencia en React, Spring Boot y ciberseguridad." />
+    <meta property="og:type" content="website" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- Google Fonts — aquí sí, fuera del CSS que procesa Tailwind v4 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <Portfolio client:load />
+  </body>
 </html>

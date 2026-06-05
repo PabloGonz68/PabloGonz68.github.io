@@ -1,1 +1,121 @@
 @import "tailwindcss";
+
+/* ============ TOKENS ============ */
+:root {
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Unified palette — deep indigo + electric blue */
+  --bg-base:       #04060f;
+  --bg-surface:    #080d1a;
+  --bg-card:       #0c1325;
+  --bg-elevated:   #111d35;
+
+  --accent:        #4f8bff;
+  --accent-dim:    rgba(79,139,255,0.15);
+  --accent-border: rgba(79,139,255,0.25);
+
+  --cyan:          #22d3ee;
+  --cyan-dim:      rgba(34,211,238,0.12);
+
+  --text-primary:  #f1f5ff;
+  --text-muted:    rgba(148,163,200,0.75);
+  --text-subtle:   rgba(100,116,160,0.6);
+
+  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ============ BASE ============ */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg-base);
+  color: var(--text-primary);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection { background: rgba(79,139,255,0.3); color: #fff; }
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--bg-base); }
+::-webkit-scrollbar-thumb {
+  background: rgba(79,139,255,0.4);
+  border-radius: 3px;
+}
+
+/* ============ TERMINAL CURSOR ============ */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+.cursor {
+  display: inline-block;
+  width: 2px; height: 1em;
+  background: #4f8bff;
+  vertical-align: text-bottom;
+  margin-left: 1px;
+  animation: blink 1.1s step-end infinite;
+}
+.cursor-green {
+  background: #00e676;
+  box-shadow: 0 0 6px rgba(0,230,118,0.6);
+}
+
+/* ============ LAPTOP 3D ============ */
+.laptop-scene {
+  perspective: 900px;
+  perspective-origin: 50% 35%;
+}
+
+/* ============ SUBTLE GRID BG ============ */
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(79,139,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(79,139,255,0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* ============ GRADIENT TEXT ============ */
+.text-gradient {
+  background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.text-gradient-cyan {
+  background: linear-gradient(135deg, #4f8bff 0%, #22d3ee 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ============ SECTION TRANSITION ============ */
+.section-fade-in {
+  background: linear-gradient(180deg, transparent, rgba(79,139,255,0.03) 50%, transparent);
+}
+
+/* ============ TERMINAL SCREEN ============ */
+@keyframes scan {
+  0%   { transform: translateY(-100%); }
+  100% { transform: translateY(200%); }
+}
+.terminal-scan::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  height: 30%;
+  background: linear-gradient(180deg, transparent, rgba(0,230,118,0.04), transparent);
+  animation: scan 4s linear infinite;
+  pointer-events: none;
+}
+
+/* ============ CYBER SECTION RESPONSIVE ============ */
+@media (max-width: 768px) {
+  .flex-col-mobile {
+    grid-template-columns: 1fr !important;
+  }
+}
