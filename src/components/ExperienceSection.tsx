@@ -2,44 +2,10 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Briefcase, MapPin, Calendar, ChevronDown, ExternalLink } from 'lucide-react'
 import ScrollReveal from './ScrollReveal'
+import { useApp } from '../lib/AppContext'
 
-// ── Data ──────────────────────────────────────────────────────
-const EXPERIENCES = [
-  {
-    role: 'Desarrollador Full Stack',
-    type: 'Prácticas Profesionales',
-    company: 'Agencia Adhoc',
-    location: 'Cádiz, España',
-    period: 'Marzo 2025 — Junio 2025',
-    current: false,
-    description: [
-      'Migración y desarrollo de plataformas web hacia arquitecturas modernas y escalables.',
-      'Separación de gestión de contenido y renderizado visual usando WordPress Headless.',
-      'Implementación de componentes altamente responsivos con React y Astro.',
-      'Programación de lógica de negocio en servidor con PHP.',
-    ],
-    tech: ['Astro', 'React', 'JavaScript', 'Tailwind CSS', 'PHP'],
-    color: '#4f8bff',
-    icon: '🚀',
-  },
-  {
-    role: 'Programador Full Stack',
-    type: 'Prácticas Profesionales',
-    company: 'Hermes Interactiva',
-    location: 'Cádiz, España',
-    period: 'Abril 2024 — Junio 2024',
-    current: false,
-    description: [
-      'Diseño e implementación desde cero de APIs RESTful escalables.',
-      'Integración de protocolos de autenticación y control de acceso seguro con Spring Security.',
-      'Optimización y mantenimiento de software de gestión empresarial heredado.',
-      'Modelado de datos y administración de esquemas en SQL Server.',
-    ],
-    tech: ['Java', 'Spring Boot', 'Spring Security', 'Visual Basic .NET', 'SQL Server'],
-    color: '#22d3ee',
-    icon: '⚙️',
-  },
-]
+// Icons array matching the order of experiences in translations
+const EXP_ICONS = ['🚀', '⚙️']
 
 // ── Tech pill ─────────────────────────────────────────────────
 const TECH_COLORS: Record<string, { text: string; bg: string; border: string }> = {
@@ -71,7 +37,7 @@ function TechPill({ name }: { name: string }) {
 }
 
 // ── Experience card ───────────────────────────────────────────
-function ExpCard({ exp, i }: { exp: typeof EXPERIENCES[0]; i: number }) {
+function ExpCard({ exp, i }: { exp: any; i: number }) {
   const [open, setOpen] = useState(true)
   const isLeft = i % 2 === 0
 
@@ -134,7 +100,7 @@ function ExpCard({ exp, i }: { exp: typeof EXPERIENCES[0]; i: number }) {
 function CardContent({
   exp, open, setOpen, align,
 }: {
-  exp: typeof EXPERIENCES[0]
+  exp: any
   open: boolean
   setOpen: (v: boolean) => void
   align: 'left' | 'right'
@@ -146,12 +112,12 @@ function CardContent({
       onClick={() => setOpen(!open)}
       style={{
         width: '100%',
-        background: 'rgba(255,255,255,0.025)',
-        border: '1px solid rgba(255,255,255,0.07)',
+        background: 'var(--card-bg)',
+        border: '1px solid var(--card-border)',
         borderRadius: '18px',
         overflow: 'hidden',
         cursor: 'pointer',
-        transition: 'border-color 0.3s',
+        transition: 'background 0.3s, border-color 0.3s',
         borderTop: `3px solid ${exp.color}`,
       }}
     >
@@ -176,7 +142,7 @@ function CardContent({
             </span>
 
             <h3 style={{
-              fontSize: '1rem', fontWeight: 700, color: '#f1f5ff',
+              fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)',
               marginBottom: '2px', lineHeight: 1.3,
             }}>
               {exp.role}
@@ -235,14 +201,14 @@ function CardContent({
           >
             <div style={{
               padding: '0 22px 20px',
-              borderTop: '1px solid rgba(255,255,255,0.05)',
+              borderTop: '1px solid var(--card-border)',
               paddingTop: '14px',
             }}>
               <ul style={{
                 display: 'flex', flexDirection: 'column', gap: '7px',
                 marginBottom: '16px', paddingLeft: '0', listStyle: 'none',
               }}>
-                {exp.description.map((line, idx) => (
+                {exp.description.map((line: string, idx: number) => (
                   <li key={idx} style={{
                     display: 'flex', alignItems: 'flex-start', gap: '8px',
                     fontSize: '0.82rem', color: 'var(--text-muted)', lineHeight: 1.6,
@@ -263,7 +229,7 @@ function CardContent({
                 display: 'flex', flexWrap: 'wrap', gap: '6px',
                 justifyContent: align === 'right' ? 'flex-end' : 'flex-start',
               }}>
-                {exp.tech.map(t => <TechPill key={t} name={t} />)}
+                {exp.tech.map((t: string) => <TechPill key={t} name={t} />)}
               </div>
             </div>
           </motion.div>
@@ -291,7 +257,7 @@ function SH({ label, title, sub }: { label: string; title: string; sub: string }
       <h2 style={{
         fontFamily: 'var(--font-sans)', fontWeight: 800,
         fontSize: 'clamp(1.8rem, 4vw, 2.9rem)',
-        letterSpacing: '-0.025em', color: '#f1f5ff', marginBottom: '12px',
+        letterSpacing: '-0.025em', color: 'var(--text-primary)', marginBottom: '12px',
       }}>{title}</h2>
       <p style={{ color: 'var(--text-muted)', fontSize: '0.92rem', maxWidth: '420px', margin: '0 auto', lineHeight: 1.65 }}>{sub}</p>
     </motion.div>
@@ -300,6 +266,16 @@ function SH({ label, title, sub }: { label: string; title: string; sub: string }
 
 // ── Main export ───────────────────────────────────────────────
 export default function ExperienceSection() {
+  const { t } = useApp()
+
+  const EXPERIENCES = t.experience.list.map((exp, i) => ({
+    ...exp,
+    current: i === 0 ? false : false, // Update if needed
+    tech: i === 0 ? ['Astro', 'React', 'JavaScript', 'Tailwind CSS', 'PHP'] : ['Java', 'Spring Boot', 'Spring Security', 'Visual Basic .NET', 'SQL Server'],
+    color: i === 0 ? '#4f8bff' : '#22d3ee',
+    icon: EXP_ICONS[i],
+  }))
+
   return (
     <section
       id="experience"
@@ -322,9 +298,9 @@ export default function ExperienceSection() {
 
       <div className="container mx-auto px-6 relative z-10">
         <SH
-          label="> trayectoria"
-          title="Experiencia"
-          sub="Experiencia práctica en entornos reales de desarrollo profesional"
+          label={t.experience.label}
+          title={t.experience.title}
+          sub={t.experience.sub}
         />
 
         {/* Timeline wrapper */}
@@ -367,7 +343,7 @@ export default function ExperienceSection() {
             color: 'var(--text-subtle)', letterSpacing: '0.08em',
           }}
         >
-          · Haz click en cada tarjeta para expandir/contraer ·
+          {t.experience.clickHint}
         </motion.p>
       </div>
     </section>

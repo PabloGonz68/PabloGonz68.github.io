@@ -4,15 +4,16 @@ import {
 } from 'framer-motion'
 import {
   ChevronDown, Mail, Phone, MapPin, Github, Linkedin,
-  ExternalLink, Download, Shield, Menu, X,
+  ExternalLink, Download, Shield, Menu, X, Sun, Moon, Languages,
 } from 'lucide-react'
 import { Input } from './ui/input'
 import { Textarea } from './ui/textarea'
-import emailjs from '@emailjs/browser'
+
 import ScrollReveal from './ScrollReveal'
 import CyberSection from './CyberSection'
 import ExperienceSection from './ExperienceSection'
 import EducationSection from './EducationSection'
+import { AppProvider, useApp } from '../lib/AppContext'
 
 // ── Typewriter ────────────────────────────────────────────────
 function useTypewriter(texts: string[], speed = 90, del = 45, pause = 2200) {
@@ -34,20 +35,35 @@ function useTypewriter(texts: string[], speed = 90, del = 45, pause = 2200) {
   return txt
 }
 
-// ── Navbar ────────────────────────────────────────────────────
-const NAV = [
-  { l: 'Inicio', h: '#hero' },
-  { l: 'Tecnologías', h: '#skills' },
-  { l: 'Experiencia', h: '#experience' },
-  { l: 'Educación', h: '#education' },
-  { l: 'Proyectos', h: '#projects' },
-  { l: 'Ciberseguridad', h: '#cybersecurity' },
-  { l: 'Contacto', h: '#contact' },
-]
+// ── useWindowWidth ────────────────────────────────────────────
+function useWindowWidth() {
+  const [width, setWidth] = useState(1440)
+  useEffect(() => {
+    setWidth(window.innerWidth)
+    const h = () => setWidth(window.innerWidth)
+    window.addEventListener('resize', h)
+    return () => window.removeEventListener('resize', h)
+  }, [])
+  return width
+}
 
+// ── Navbar ────────────────────────────────────────────────────
 function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
+  const width = useWindowWidth()
+  const isDesktop = width >= 1024
+  const { t, lang, setLang, theme, toggleTheme } = useApp()
+
+  const NAV = [
+    { l: t.nav.home, h: '#hero' },
+    { l: t.nav.skills, h: '#skills' },
+    { l: t.nav.experience, h: '#experience' },
+    { l: t.nav.education, h: '#education' },
+    { l: t.nav.projects, h: '#projects' },
+    { l: t.nav.cybersecurity, h: '#cybersecurity' },
+    { l: t.nav.contact, h: '#contact' },
+  ]
 
   useEffect(() => {
     const h = () => setScrolled(window.scrollY > 30)
@@ -55,16 +71,25 @@ function Navbar() {
     return () => window.removeEventListener('scroll', h)
   }, [])
 
-  // Close menu on resize to desktop
   useEffect(() => {
-    const h = () => { if (window.innerWidth >= 1024) setOpen(false) }
-    window.addEventListener('resize', h)
-    return () => window.removeEventListener('resize', h)
-  }, [])
+    if (isDesktop) setOpen(false)
+  }, [isDesktop])
 
   const go = (id: string) => {
     document.querySelector(id)?.scrollIntoView({ behavior: 'smooth' })
     setOpen(false)
+  }
+
+  // Shared toggle button style
+  const controlBtn = {
+    background: 'rgba(255,255,255,0.05)',
+    border: '1px solid var(--card-border)',
+    borderRadius: '8px',
+    cursor: 'pointer' as const,
+    color: 'var(--text-muted)',
+    display: 'flex' as const, alignItems: 'center' as const, justifyContent: 'center' as const,
+    width: '32px', height: '32px',
+    transition: 'background 0.25s, border-color 0.25s, color 0.25s',
   }
 
   return (
@@ -77,14 +102,16 @@ function Navbar() {
           position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
           height: '60px',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '0 24px',
-          background: scrolled || open ? 'rgba(4,6,15,0.92)' : 'transparent',
+          padding: '0 28px',
+          background: scrolled || open ? 'var(--nav-bg)' : 'transparent',
           backdropFilter: scrolled || open ? 'blur(20px)' : 'none',
-          borderBottom: scrolled || open ? '1px solid rgba(255,255,255,0.06)' : '1px solid transparent',
+          borderBottom: scrolled || open
+            ? '1px solid var(--nav-border)'
+            : '1px solid transparent',
           transition: 'background 0.4s, border-color 0.4s, backdrop-filter 0.4s',
         }}
       >
-        {/* Logo */}
+        {/* ── Logo ── */}
         <motion.button
           whileHover={{ opacity: 0.8 }}
           onClick={() => go('#hero')}
@@ -98,93 +125,181 @@ function Navbar() {
           {'<pablo />'}
         </motion.button>
 
-        {/* Desktop links — visible only on lg+ */}
-        <div style={{ display: 'flex', gap: '2px', alignItems: 'center' }} className="hidden lg:flex">
-          {NAV.map((n) => (
-            <button
-              key={n.l}
-              onClick={() => go(n.h)}
-              style={{
-                background: 'none', border: 'none', cursor: 'pointer',
-                padding: '6px 11px', borderRadius: '8px',
-                fontSize: '0.8rem', fontWeight: 500, color: 'var(--text-muted)',
-                fontFamily: 'var(--font-sans)',
-                transition: 'color 0.2s, background 0.2s',
-                whiteSpace: 'nowrap',
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.color = '#f1f5ff'
-                e.currentTarget.style.background = 'rgba(255,255,255,0.05)'
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.color = 'var(--text-muted)'
-                e.currentTarget.style.background = 'transparent'
-              }}
-            >
-              {n.l}
-            </button>
-          ))}
-        </div>
+        {/* ── Desktop links (>= 1024px) ── */}
+        {isDesktop && (
+          <div style={{ display: 'flex', gap: '2px', alignItems: 'center' }}>
+            {NAV.map((n) => (
+              <button
+                key={n.l}
+                onClick={() => go(n.h)}
+                style={{
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  padding: '6px 11px', borderRadius: '8px',
+                  fontSize: '0.8rem', fontWeight: 500,
+                  color: 'var(--text-muted)',
+                  fontFamily: 'var(--font-sans)',
+                  transition: 'color 0.2s, background 0.2s',
+                  whiteSpace: 'nowrap',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.color = 'var(--text-primary)'
+                  e.currentTarget.style.background = 'var(--menu-hover-bg)'
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.color = 'var(--text-muted)'
+                  e.currentTarget.style.background = 'transparent'
+                }}
+              >
+                {n.l}
+              </button>
+            ))}
+          </div>
+        )}
 
-        {/* Hamburger button — visible below lg */}
-        <motion.button
-          className="lg:hidden"
-          onClick={() => setOpen(!open)}
-          whileTap={{ scale: 0.9 }}
-          style={{
-            background: open ? 'rgba(79,139,255,0.12)' : 'rgba(255,255,255,0.05)',
-            border: `1px solid ${open ? 'rgba(79,139,255,0.3)' : 'rgba(255,255,255,0.08)'}`,
-            borderRadius: '10px',
-            cursor: 'pointer',
-            color: open ? '#60a5fa' : 'var(--text-muted)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            width: '38px', height: '38px',
-            transition: 'background 0.25s, border-color 0.25s, color 0.25s',
-          }}
-          aria-label={open ? 'Cerrar menú' : 'Abrir menú'}
-          aria-expanded={open}
-        >
-          <AnimatePresence mode="wait" initial={false}>
-            {open ? (
+        {/* ── Controls: theme + lang + hamburger ── */}
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          {/* Theme toggle */}
+          <motion.button
+            whileHover={{ scale: 1.08 }}
+            whileTap={{ scale: 0.92 }}
+            onClick={toggleTheme}
+            title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            style={controlBtn}
+            onMouseEnter={e => {
+              (e.currentTarget as HTMLElement).style.background = 'rgba(79,139,255,0.12)'
+                ; (e.currentTarget as HTMLElement).style.color = '#60a5fa'
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)'
+                ; (e.currentTarget as HTMLElement).style.color = 'var(--text-muted)'
+            }}
+          >
+            <AnimatePresence mode="wait" initial={false}>
+              {theme === 'dark' ? (
+                <motion.span key="sun"
+                  initial={{ rotate: -45, opacity: 0, scale: 0.7 }}
+                  animate={{ rotate: 0, opacity: 1, scale: 1 }}
+                  exit={{ rotate: 45, opacity: 0, scale: 0.7 }}
+                  transition={{ duration: 0.2 }}
+                  style={{ display: 'flex' }}
+                >
+                  <Sun size={15} />
+                </motion.span>
+              ) : (
+                <motion.span key="moon"
+                  initial={{ rotate: 45, opacity: 0, scale: 0.7 }}
+                  animate={{ rotate: 0, opacity: 1, scale: 1 }}
+                  exit={{ rotate: -45, opacity: 0, scale: 0.7 }}
+                  transition={{ duration: 0.2 }}
+                  style={{ display: 'flex' }}
+                >
+                  <Moon size={15} />
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </motion.button>
+
+          {/* Language toggle */}
+          <motion.button
+            whileHover={{ scale: 1.08 }}
+            whileTap={{ scale: 0.92 }}
+            onClick={() => setLang(lang === 'es' ? 'en' : 'es')}
+            title={lang === 'es' ? 'Switch to English' : 'Cambiar a Español'}
+            style={{
+              ...controlBtn,
+              width: 'auto',
+              padding: '0 10px',
+              gap: '5px',
+              fontSize: '0.7rem',
+              fontWeight: 700,
+              fontFamily: 'var(--font-mono)',
+              letterSpacing: '0.05em',
+            }}
+            onMouseEnter={e => {
+              (e.currentTarget as HTMLElement).style.background = 'rgba(79,139,255,0.12)'
+                ; (e.currentTarget as HTMLElement).style.color = '#60a5fa'
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)'
+                ; (e.currentTarget as HTMLElement).style.color = 'var(--text-muted)'
+            }}
+          >
+            <Languages size={13} />
+            <AnimatePresence mode="wait" initial={false}>
               <motion.span
-                key="x"
-                initial={{ rotate: -45, opacity: 0 }}
-                animate={{ rotate: 0, opacity: 1 }}
-                exit={{ rotate: 45, opacity: 0 }}
-                transition={{ duration: 0.18 }}
+                key={lang}
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 4 }}
+                transition={{ duration: 0.15 }}
               >
-                <X size={18} />
+                {lang === 'es' ? 'EN' : 'ES'}
               </motion.span>
-            ) : (
-              <motion.span
-                key="menu"
-                initial={{ rotate: 45, opacity: 0 }}
-                animate={{ rotate: 0, opacity: 1 }}
-                exit={{ rotate: -45, opacity: 0 }}
-                transition={{ duration: 0.18 }}
-              >
-                <Menu size={18} />
-              </motion.span>
-            )}
-          </AnimatePresence>
-        </motion.button>
+            </AnimatePresence>
+          </motion.button>
+
+          {/* Hamburger (< 1024px) */}
+          {!isDesktop && (
+            <motion.button
+              onClick={() => setOpen(!open)}
+              whileTap={{ scale: 0.9 }}
+              style={{
+                background: open ? 'rgba(79,139,255,0.12)' : 'rgba(255,255,255,0.05)',
+                border: `1px solid ${open ? 'rgba(79,139,255,0.3)' : 'var(--card-border)'}`,
+                borderRadius: '10px',
+                cursor: 'pointer',
+                color: open ? '#60a5fa' : 'var(--text-muted)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                width: '38px', height: '38px',
+                transition: 'background 0.25s, border-color 0.25s, color 0.25s',
+              }}
+              aria-label={open ? t.nav.closeMenu : t.nav.openMenu}
+              aria-expanded={open}
+            >
+              <AnimatePresence mode="wait" initial={false}>
+                {open ? (
+                  <motion.span
+                    key="x"
+                    initial={{ rotate: -45, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: 45, opacity: 0 }}
+                    transition={{ duration: 0.18 }}
+                    style={{ display: 'flex' }}
+                  >
+                    <X size={18} />
+                  </motion.span>
+                ) : (
+                  <motion.span
+                    key="menu"
+                    initial={{ rotate: 45, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: -45, opacity: 0 }}
+                    transition={{ duration: 0.18 }}
+                    style={{ display: 'flex' }}
+                  >
+                    <Menu size={18} />
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </motion.button>
+          )}
+        </div>
       </motion.nav>
 
-      {/* Mobile drawer */}
+      {/* ── Mobile drawer (< 1024px, only when open) ── */}
       <AnimatePresence>
-        {open && (
+        {!isDesktop && open && (
           <motion.div
             key="drawer"
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-            className="lg:hidden"
             style={{
               position: 'fixed', top: '60px', left: 0, right: 0, zIndex: 99,
-              background: 'rgba(4,6,15,0.97)',
+              background: 'var(--drawer-bg)',
               backdropFilter: 'blur(24px)',
-              borderBottom: '1px solid rgba(255,255,255,0.07)',
+              borderBottom: '1px solid var(--drawer-border)',
               padding: '8px 0 16px',
             }}
           >
@@ -193,7 +308,7 @@ function Navbar() {
                 key={n.l}
                 initial={{ opacity: 0, x: -16 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.05, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ delay: i * 0.045, duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
                 onClick={() => go(n.h)}
                 style={{
                   display: 'flex', alignItems: 'center', gap: '10px',
@@ -205,8 +320,8 @@ function Navbar() {
                   transition: 'color 0.2s, background 0.2s',
                 }}
                 onMouseEnter={e => {
-                  e.currentTarget.style.color = '#f1f5ff'
-                  e.currentTarget.style.background = 'rgba(79,139,255,0.06)'
+                  e.currentTarget.style.color = 'var(--text-primary)'
+                  e.currentTarget.style.background = 'var(--menu-hover-bg)'
                 }}
                 onMouseLeave={e => {
                   e.currentTarget.style.color = 'var(--text-muted)'
@@ -230,6 +345,14 @@ function Navbar() {
 // ── Skill card ────────────────────────────────────────────────
 function SkillCard({ s, i }: { s: { name: string; icon: string; category: string }; i: number }) {
   const [h, setH] = useState(false)
+  const { theme } = useApp()
+
+  const invertInDark = ['TypeScript', 'MongoDB']
+  const invertInLight = ['GitHub', 'JWT', 'Unity', 'Linux']
+
+  const shouldInvert = (theme === 'dark' && invertInDark.includes(s.name)) ||
+    (theme === 'light' && invertInLight.includes(s.name))
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -240,8 +363,8 @@ function SkillCard({ s, i }: { s: { name: string; icon: string; category: string
       onMouseEnter={() => setH(true)}
       onMouseLeave={() => setH(false)}
       style={{
-        background: h ? 'rgba(79,139,255,0.08)' : 'rgba(255,255,255,0.02)',
-        border: `1px solid ${h ? 'rgba(79,139,255,0.35)' : 'rgba(255,255,255,0.07)'}`,
+        background: h ? 'rgba(79,139,255,0.08)' : 'var(--card-bg)',
+        border: `1px solid ${h ? 'rgba(79,139,255,0.35)' : 'var(--card-border)'}`,
         borderRadius: '14px', padding: '20px 12px 16px',
         textAlign: 'center', cursor: 'default',
         backdropFilter: 'blur(6px)',
@@ -252,11 +375,13 @@ function SkillCard({ s, i }: { s: { name: string; icon: string; category: string
       <img src={s.icon} alt={s.name}
         style={{
           width: '34px', height: '34px', objectFit: 'contain', margin: '0 auto 10px', display: 'block',
-          filter: h ? 'brightness(1.1) drop-shadow(0 0 6px rgba(96,165,250,0.4))' : 'none',
+          filter: h
+            ? `${shouldInvert ? 'invert(1) ' : ''}brightness(1.1) drop-shadow(0 0 6px rgba(96,165,250,0.4))`
+            : shouldInvert ? 'invert(1)' : 'none',
           transition: 'filter 0.3s',
         }}
       />
-      <div style={{ fontSize: '0.78rem', fontWeight: 600, color: h ? '#f1f5ff' : '#c8d5f0', transition: 'color 0.2s' }}>
+      <div style={{ fontSize: '0.78rem', fontWeight: 600, color: h ? 'var(--text-primary)' : 'var(--text-muted)', transition: 'color 0.2s' }}>
         {s.name}
       </div>
       <div style={{ fontSize: '0.62rem', color: 'var(--text-subtle)', marginTop: '3px', fontFamily: 'var(--font-mono)' }}>
@@ -274,7 +399,14 @@ const GRADIENTS = [
   'linear-gradient(135deg,#4a1a1a,#3d1414)',
 ]
 
-function ProjectCard({ p, i }: { p: typeof PROJECTS[0]; i: number }) {
+const PROJECTS_BASE = [
+  { tech: ['React', 'Spring Boot', 'TypeScript', 'PostgreSQL', 'Docker'], image: '/projects/togethr.webp', github: 'https://github.com/PabloGonz68/Togethr', demo: 'https://proyecto-togethr-v1.vercel.app' },
+  { tech: ['React', 'Spring Boot', 'Java', 'MariaDB', 'Tailwind CSS'], image: '/projects/hospeda.webp', github: '#', demo: '#' },
+  { tech: ['Java', 'MySQL', 'Swing'], image: '/projects/MixPlace.webp', github: 'https://github.com/PabloGonz68/MixPlace1.0', demo: '#' },
+  { tech: ['Java', 'Android Studio', 'SQLite'], image: '/projects/unitidy (2).webp', github: 'https://github.com/PabloGonz68/UniTidy', demo: '#' },
+]
+
+function ProjectCard({ p, i }: { p: { title: string; description: string; tech: string[]; image: string; github: string; demo: string }; i: number }) {
   const [h, setH] = useState(false)
   const [imgErr, setImgErr] = useState(false)
   const mx = useMotionValue(0); const my = useMotionValue(0)
@@ -307,8 +439,8 @@ function ProjectCard({ p, i }: { p: typeof PROJECTS[0]; i: number }) {
         }}
       >
         <div style={{
-          background: 'rgba(255,255,255,0.025)',
-          border: `1px solid ${h ? 'rgba(79,139,255,0.3)' : 'rgba(255,255,255,0.07)'}`,
+          background: 'var(--card-bg)',
+          border: `1px solid ${h ? 'rgba(79,139,255,0.3)' : 'var(--card-border)'}`,
           borderRadius: '18px', overflow: 'hidden',
           boxShadow: h ? '0 20px 50px rgba(0,0,0,0.5), 0 0 0 1px rgba(79,139,255,0.2)' : '0 4px 16px rgba(0,0,0,0.3)',
           transition: 'border-color 0.3s, box-shadow 0.3s',
@@ -371,7 +503,7 @@ function ProjectCard({ p, i }: { p: typeof PROJECTS[0]; i: number }) {
 
           {/* Content */}
           <div style={{ padding: '22px 24px 26px' }}>
-            <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#f1f5ff', marginBottom: '8px' }}>
+            <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '8px' }}>
               {p.title}
             </h3>
             <p style={{ fontSize: '0.83rem', color: 'var(--text-muted)', lineHeight: 1.65, marginBottom: '16px' }}>
@@ -399,38 +531,34 @@ function ProjectCard({ p, i }: { p: typeof PROJECTS[0]; i: number }) {
 
 // ── Datos ─────────────────────────────────────────────────────
 const SKILLS = [
-  { name: 'Java',                icon: '/assets/svgs/java.svg',                   category: 'Backend'   },
-  { name: 'Spring Boot',         icon: '/assets/svgs/spring.svg',                 category: 'Backend'   },
-  { name: 'React',               icon: '/assets/svgs/react.svg',                  category: 'Frontend'  },
-  { name: 'Angular',             icon: '/assets/svgs/angularJS.svg',              category: 'Frontend'  },
-  { name: 'TypeScript',          icon: '/assets/svgs/typescript.svg',             category: 'Frontend'  },
-  { name: 'MySQL',               icon: '/assets/svgs/mysql.svg',                  category: 'Database'  },
-  { name: 'MongoDB',             icon: '/assets/svgs/mongodb.svg',                category: 'Database'  },
-  { name: 'Tailwind CSS',        icon: '/assets/svgs/tailwind CSS.svg',           category: 'Frontend'  },
-  { name: 'Astro',               icon: '/assets/svgs/astro.svg',                  category: 'Frontend'  },
-  { name: 'PHP',                 icon: '/assets/svgs/PHP.svg',                    category: 'Backend'   },
-  { name: 'Laravel',             icon: '/assets/svgs/Laravel.svg',               category: 'Backend'   },
-  { name: 'Docker',              icon: '/assets/svgs/Docker.svg',                 category: 'DevOps'    },
-  { name: '.NET',                icon: '/assets/svgs/NET.svg',                    category: 'Backend'   },
-  { name: 'WordPress',           icon: '/assets/svgs/WordPress.svg',              category: 'CMS'       },
-  { name: 'Android Studio',      icon: '/assets/svgs/AndroidStudio.svg',          category: 'Mobile'    },
-  { name: 'Python',              icon: '/assets/svgs/Python.svg',                 category: 'Backend'   },
-  { name: 'SQL Server',          icon: '/assets/svgs/Microsoft SQL Server.svg',   category: 'Database'  },
-  { name: 'Git',                 icon: '/assets/svgs/git.svg',                    category: 'DevOps'    },
-  { name: 'GitHub',              icon: '/assets/svgs/github.svg',                 category: 'DevOps'    },
-  { name: 'Linux',               icon: '/assets/svgs/linux.svg',                  category: 'DevOps'    },
-  { name: 'Bash Scripting',      icon: '/assets/svgs/gnubash.svg',                category: 'DevOps'    },
-  { name: 'Postman',             icon: '/assets/svgs/postman.svg',                category: 'Tools'     },
-  { name: 'JWT',                 icon: '/assets/svgs/jsonwebtokens.svg',          category: 'Security'  },
-  { name: 'Odoo',                icon: '/assets/svgs/odoo.svg',                   category: 'CMS'       },
-  { name: 'Unity',               icon: '/assets/svgs/unity.svg',                  category: 'Game Dev'  },
+  { name: 'Java', icon: '/assets/svgs/java.svg', category: 'Backend' },
+  { name: 'Spring Boot', icon: '/assets/svgs/spring.svg', category: 'Backend' },
+  { name: 'React', icon: '/assets/svgs/react.svg', category: 'Frontend' },
+  { name: 'Angular', icon: '/assets/svgs/angularJS.svg', category: 'Frontend' },
+  { name: 'TypeScript', icon: '/assets/svgs/typescript.svg', category: 'Frontend' },
+  { name: 'MySQL', icon: '/assets/svgs/mysql.svg', category: 'Database' },
+  { name: 'MongoDB', icon: '/assets/svgs/mongodb.svg', category: 'Database' },
+  { name: 'Tailwind CSS', icon: '/assets/svgs/tailwind CSS.svg', category: 'Frontend' },
+  { name: 'Astro', icon: '/assets/svgs/astro.svg', category: 'Frontend' },
+  { name: 'PHP', icon: '/assets/svgs/PHP.svg', category: 'Backend' },
+  { name: 'Laravel', icon: '/assets/svgs/Laravel.svg', category: 'Backend' },
+  { name: 'Docker', icon: '/assets/svgs/Docker.svg', category: 'DevOps' },
+  { name: '.NET', icon: '/assets/svgs/NET.svg', category: 'Backend' },
+  { name: 'WordPress', icon: '/assets/svgs/WordPress.svg', category: 'CMS' },
+  { name: 'Android Studio', icon: '/assets/svgs/AndroidStudio.svg', category: 'Mobile' },
+  { name: 'Python', icon: '/assets/svgs/Python.svg', category: 'Backend' },
+  { name: 'SQL Server', icon: '/assets/svgs/Microsoft SQL Server.svg', category: 'Database' },
+  { name: 'Git', icon: '/assets/svgs/git.svg', category: 'DevOps' },
+  { name: 'GitHub', icon: '/assets/svgs/github.svg', category: 'DevOps' },
+  { name: 'Linux', icon: '/assets/svgs/linux.svg', category: 'DevOps' },
+  { name: 'Bash', icon: '/assets/svgs/gnubash.svg', category: 'DevOps' },
+  { name: 'Postman', icon: '/assets/svgs/postman.svg', category: 'Tools' },
+  { name: 'JWT', icon: '/assets/svgs/jsonwebtokens.svg', category: 'Security' },
+  { name: 'Odoo', icon: '/assets/svgs/odoo.svg', category: 'CMS' },
+  { name: 'Unity', icon: '/assets/svgs/unity.svg', category: 'Game Dev' },
 ]
 
 // ── Section header ─────────────────────────────────────────
-// Usa whileInView nativo de Framer Motion — viewport={{ once: true }} garantiza
-// que la animación solo se ejecuta UNA vez sin importar los re-renders del padre.
-// El patrón useInView + animate={isInView ? 'visible' : 'hidden'} es susceptible
-// a re-triggers cuando el componente padre actualiza estado frecuentemente.
 function SH({ label, title, sub }: { label: string; title: string; sub: string }) {
   return (
     <motion.div
@@ -448,55 +576,18 @@ function SH({ label, title, sub }: { label: string; title: string; sub: string }
       <h2 style={{
         fontFamily: 'var(--font-sans)', fontWeight: 800,
         fontSize: 'clamp(1.8rem, 4vw, 2.9rem)',
-        letterSpacing: '-0.025em', color: '#f1f5ff', marginBottom: '12px',
+        letterSpacing: '-0.025em', color: 'var(--text-primary)', marginBottom: '12px',
       }}>{title}</h2>
       <p style={{ color: 'var(--text-muted)', fontSize: '0.92rem', maxWidth: '420px', margin: '0 auto', lineHeight: 1.65 }}>{sub}</p>
     </motion.div>
   )
 }
 
-const PROJECTS = [
-  {
-
-    title: 'Hospeda',
-    description: 'Plataforma de hospedaje entre particulares desarrollada con React, Spring Boot y MySQL.',
-    tech: ['React', 'Spring Boot', 'Java', 'MySQL', 'Tailwind CSS'],
-    image: '/projects/hospeda.webp',
-    github: '#',
-    demo: '#',
-  },
-  {
-    title: 'MixPlace',
-    description: 'Aplicación de gestión de tareas con Angular, .NET Core y base de datos SQL Server.',
-    tech: ['Angular', '.NET Core', 'SQL Server', 'Docker'],
-    image: '/task-management-app.png',
-    github: '#',
-    demo: '#',
-  },
-  {
-    title: 'Unitidy',
-    description: 'App móvil de gestión de tareas para pisos de estudiantes con Android Studio y SQLite.',
-    tech: ['Java', 'Android Studio', 'SQLite'],
-    image: '/projects/unitidy (2).webp',
-    github: '#',
-    demo: '#',
-  },
-  {
-    title: 'Basic Instagram Clone',
-    description: 'Clon básico de Instagram desarrollado con Laravel, PHP, Tailwind CSS y MySQL.',
-    tech: ['Laravel', 'PHP', 'Tailwind CSS', 'MySQL'],
-    image: '/cms-dashboard-admin-panel.png',
-    github: '#',
-    demo: '#',
-  },
-]
-
 function CoinAvatar() {
   const [flipped, setFlipped] = useState(false)
   const [isHovering, setIsHovering] = useState(false)
   const [isFlipping, setIsFlipping] = useState(false)
 
-  // Auto-flip cada 10 segundos
   useEffect(() => {
     const id = setInterval(() => {
       if (!isHovering) {
@@ -528,7 +619,6 @@ function CoinAvatar() {
       transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
       style={{ marginBottom: '28px' }}
     >
-      {/* Contenedor interactivo */}
       <motion.div
         onHoverStart={handleHoverStart}
         onHoverEnd={handleHoverEnd}
@@ -558,22 +648,17 @@ function CoinAvatar() {
             borderRadius: '50%',
             padding: '3px',
             zIndex: 0,
-            /* Aquí está el nuevo resplandor uniforme */
             boxShadow: '0 0 25px 8px rgba(79, 139, 255, 0.4)',
           }}
         />
 
-        {/* Contenedor de la moneda (SIN LEVITACIÓN, solo perspectiva 3D) */}
-        <div
-          style={{
-            position: 'relative',
-            width: '148px',
-            height: '148px',
-            perspective: '600px',
-            zIndex: 1,
-          }}
-        >
-          {/* 3D flip inner */}
+        <div style={{
+          position: 'relative',
+          width: '148px',
+          height: '148px',
+          perspective: '600px',
+          zIndex: 1,
+        }}>
           <motion.div
             animate={{ rotateY: rotation }}
             transition={{
@@ -587,7 +672,7 @@ function CoinAvatar() {
               transformStyle: 'preserve-3d',
             }}
           >
-            {/* FRONT — Profile photo (Fondo sólido añadido para evitar que sea translúcida) */}
+            {/* FRONT — Profile photo */}
             <div style={{
               position: 'absolute',
               inset: 0,
@@ -597,7 +682,7 @@ function CoinAvatar() {
               overflow: 'hidden',
               border: '3px solid transparent',
               background: 'linear-gradient(var(--bg-base), var(--bg-base)) padding-box, linear-gradient(135deg, #4f8bff, #22d3ee) border-box',
-              backgroundColor: 'var(--bg-base)', /* Fuerza opacidad */
+              backgroundColor: 'var(--bg-base)',
             }}>
               <img
                 src="/assets/fotoPablo.webp"
@@ -608,7 +693,7 @@ function CoinAvatar() {
                   objectFit: 'cover',
                   borderRadius: '50%',
                   display: 'block',
-                  backgroundColor: '#000', /* Capa extra de seguridad contra la transparencia */
+                  backgroundColor: '#000',
                 }}
               />
             </div>
@@ -627,7 +712,7 @@ function CoinAvatar() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              backgroundColor: '#06242E', /* Fuerza opacidad */
+              backgroundColor: '#06242E',
             }}>
               <img
                 src="/assets/logo-pg-2.webp"
@@ -664,25 +749,54 @@ function CoinAvatar() {
     </motion.div>
   )
 }
+
 // ── Componente principal ──────────────────────────────────────
-export default function Portfolio() {
-  const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' })
+function PortfolioContent() {
+  const { t } = useApp()
+  const [form, setForm] = useState({ name: '', email: '', subject: '', message: '', _honey: '' })
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
   const { scrollYProgress } = useScroll()
   const heroY = useTransform(scrollYProgress, [0, 0.3], ['0%', '30%'])
   const scaleX = useSpring(scrollYProgress, { stiffness: 90, damping: 30 })
-  const tw = useTypewriter(['Desarrollador Full Stack', 'Especialista React & Spring Boot', 'Apasionado por la Ciberseguridad'])
+  const tw = useTypewriter(t.hero.typewriterTexts as unknown as string[])
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setForm({ ...form, [e.target.name]: e.target.value })
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Honeypot check: si un bot llena este campo oculto, simulamos éxito y no enviamos nada.
+    if (form._honey) {
+      setStatus('sent')
+      setForm({ name: '', email: '', subject: '', message: '', _honey: '' })
+      setTimeout(() => setStatus('idle'), 4000)
+      return
+    }
+
     setStatus('sending')
     try {
-      await emailjs.send('service_msl1fzv', 'template_i2n5eel', form, 'hSwt5QFBvJ9dlEx7O')
-      setStatus('sent')
-      setForm({ name: '', email: '', subject: '', message: '' })
+      const response = await fetch('https://formsubmit.co/ajax/pablogonzalezsilva6@gmail.com', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          name: form.name.trim(),
+          email: form.email.trim(),
+          _replyto: form.email.trim(),
+          _subject: form.subject.trim() || 'Nuevo mensaje del portfolio',
+          message: form.message.trim()
+        })
+      })
+      
+      if (response.ok) {
+        setStatus('sent')
+        setForm({ name: '', email: '', subject: '', message: '', _honey: '' })
+      } else {
+        setStatus('error')
+      }
       setTimeout(() => setStatus('idle'), 4000)
     } catch {
       setStatus('error')
@@ -697,7 +811,12 @@ export default function Portfolio() {
     a.click()
   }
 
-  // SH movido fuera del componente — ver línea ~330
+  // Merge base project data with i18n text
+  const PROJECTS = PROJECTS_BASE.map((base, i) => ({
+    ...base,
+    title: t.projects.list[i].title,
+    description: t.projects.list[i].description,
+  }))
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-base)' }}>
@@ -723,7 +842,7 @@ export default function Portfolio() {
         {/* Grid bg */}
         <div className="grid-bg" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} />
 
-        {/* Radial glow — UNO, centrado, sutil */}
+        {/* Radial glow */}
         <div style={{
           position: 'absolute', top: '20%', left: '50%', transform: 'translateX(-50%)',
           width: '700px', height: '400px',
@@ -743,8 +862,8 @@ export default function Portfolio() {
             transition={{ delay: 0.5, duration: 0.5 }}
             style={{
               display: 'inline-flex', alignItems: 'center', gap: '7px',
-              background: 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(255,255,255,0.09)',
+              background: 'var(--card-bg)',
+              border: '1px solid var(--card-border)',
               borderRadius: '999px', padding: '5px 14px', marginBottom: '18px',
             }}
           >
@@ -754,7 +873,7 @@ export default function Portfolio() {
               style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#4ade80', flexShrink: 0 }}
             />
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--text-muted)', letterSpacing: '0.04em' }}>
-              Disponible para nuevos proyectos
+              {t.hero.available}
             </span>
           </motion.div>
 
@@ -766,7 +885,7 @@ export default function Portfolio() {
             style={{
               fontFamily: 'var(--font-sans)', fontWeight: 900,
               fontSize: 'clamp(2.4rem, 6vw, 4.5rem)',
-              color: '#f1f5ff', letterSpacing: '-0.035em',
+              color: 'var(--text-primary)', letterSpacing: '-0.035em',
               lineHeight: 1.08, marginBottom: '14px',
             }}
           >
@@ -797,8 +916,7 @@ export default function Portfolio() {
               margin: '0 auto 36px', lineHeight: 1.75,
             }}
           >
-            Técnico superior graduado en DAM y DAW con experiencia en desarrollo web y móvil.
-            Especializado en tecnologías modernas, arquitecturas escalables y ciberseguridad.
+            {t.hero.description}
           </motion.p>
 
           {/* CTA */}
@@ -810,12 +928,12 @@ export default function Portfolio() {
           >
             {[
               {
-                label: 'Contactar', icon: <Mail size={15} />, primary: true,
+                label: t.hero.contactBtn, icon: <Mail size={15} />, primary: true,
                 action: () => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' }),
               },
-              { label: 'Descargar CV', icon: <Download size={15} />, primary: false, action: dlCV },
+              { label: t.hero.downloadCV, icon: <Download size={15} />, primary: false, action: dlCV },
               {
-                label: 'Ver Proyectos', icon: null, primary: false,
+                label: t.hero.viewProjects, icon: null, primary: false,
                 action: () => document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' }),
               },
             ].map(({ label, icon, primary, action }) => (
@@ -831,10 +949,10 @@ export default function Portfolio() {
                   cursor: 'pointer',
                   background: primary
                     ? 'linear-gradient(135deg, #4f8bff, #3b82f6)'
-                    : 'rgba(255,255,255,0.04)',
+                    : 'var(--card-bg)',
                   border: primary
                     ? '1px solid rgba(79,139,255,0.4)'
-                    : '1px solid rgba(255,255,255,0.1)',
+                    : '1px solid var(--card-border)',
                   color: primary ? 'white' : 'var(--text-muted)',
                   boxShadow: primary ? '0 4px 20px rgba(79,139,255,0.3)' : 'none',
                   transition: 'box-shadow 0.2s',
@@ -894,7 +1012,7 @@ export default function Portfolio() {
             style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px' }}
           >
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.58rem', color: 'var(--text-subtle)', letterSpacing: '0.15em' }}>
-              SCROLL
+              {t.hero.scroll}
             </span>
             <ChevronDown size={16} style={{ color: 'rgba(79,139,255,0.5)' }} />
           </motion.div>
@@ -909,7 +1027,7 @@ export default function Portfolio() {
         background: 'linear-gradient(180deg, var(--bg-base), var(--bg-surface))',
       }}>
         <div className="container mx-auto px-6">
-          <SH label="> stack técnico" title="Tecnologías" sub="Experiencia en un amplio stack de tecnologías modernas" />
+          <SH label={t.skills.label} title={t.skills.title} sub={t.skills.sub} />
           <div style={{
             display: 'flex',
             flexWrap: 'wrap',
@@ -940,7 +1058,7 @@ export default function Portfolio() {
           ═══════════════════════════════════════════════════ */}
       <section id="projects" style={{ padding: '100px 0', background: 'var(--bg-surface)' }}>
         <div className="container mx-auto px-6">
-          <SH label="> mi trabajo" title="Proyectos" sub="Algunos de mis trabajos más destacados" />
+          <SH label={t.projects.label} title={t.projects.title} sub={t.projects.sub} />
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))',
@@ -961,7 +1079,7 @@ export default function Portfolio() {
           ═══════════════════════════════════════════════════ */}
       <section id="contact" style={{ padding: '100px 0', background: 'var(--bg-surface)' }}>
         <div className="container mx-auto px-6">
-          <SH label="> hablemos" title="Contacto" sub="¿Tienes un proyecto en mente? ¡Hablemos!" />
+          <SH label={t.contact.label} title={t.contact.title} sub={t.contact.sub} />
 
           <div style={{
             display: 'grid',
@@ -972,9 +1090,9 @@ export default function Portfolio() {
             <ScrollReveal variant="slideInLeft">
               <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                 {[
-                  { Icon: Mail, label: 'Email', val: 'pablogonzalezsilva6@gmail.com', href: 'mailto:pablogonzalezsilva6@gmail.com' },
-                  { Icon: Phone, label: 'Teléfono', val: '+34 601 42 11 10', href: 'tel:+34601421110' },
-                  { Icon: MapPin, label: 'Ubicación', val: 'Cádiz, España', href: '#' },
+                  { Icon: Mail, label: t.contact.email, val: 'pablogonzalezsilva6@gmail.com', href: 'mailto:pablogonzalezsilva6@gmail.com' },
+                  { Icon: Phone, label: t.contact.phone, val: '+34 601 42 11 10', href: 'tel:+34601421110' },
+                  { Icon: MapPin, label: t.contact.location, val: t.contact.locationVal, href: '#' },
                 ].map(({ Icon, label, val, href }) => (
                   <motion.div
                     key={label} whileHover={{ x: 5 }}
@@ -988,7 +1106,7 @@ export default function Portfolio() {
                       <Icon size={18} style={{ color: '#60a5fa' }} />
                     </div>
                     <div>
-                      <div style={{ fontSize: '0.82rem', fontWeight: 600, color: '#f1f5ff', marginBottom: '2px' }}>{label}</div>
+                      <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '2px' }}>{label}</div>
                       <a href={href} style={{
                         fontSize: '0.8rem', color: 'var(--text-muted)', textDecoration: 'none',
                         transition: 'color 0.2s',
@@ -1007,20 +1125,23 @@ export default function Portfolio() {
             {/* Form */}
             <ScrollReveal variant="slideInRight">
               <form onSubmit={onSubmit} style={{
-                background: 'rgba(255,255,255,0.025)',
-                border: '1px solid rgba(255,255,255,0.07)',
+                background: 'var(--card-bg)',
+                border: '1px solid var(--card-border)',
                 borderRadius: '18px', padding: '28px',
                 display: 'flex', flexDirection: 'column', gap: '14px',
               }}>
+                {/* Honeypot field - Bots will fill this out, humans won't see it */}
+                <input type="text" name="_honey" style={{ display: 'none' }} value={form._honey} onChange={onChange} tabIndex={-1} autoComplete="off" />
+
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                  <Input placeholder="Nombre" name="name" required value={form.name} onChange={onChange}
+                  <Input placeholder={t.contact.namePlaceholder} name="name" required maxLength={80} value={form.name} onChange={onChange}
                     className="bg-white/5 border-white/10 text-white placeholder:text-slate-500 rounded-xl focus:border-blue-500/50" />
-                  <Input type="email" placeholder="Email" name="email" required value={form.email} onChange={onChange}
+                  <Input type="email" placeholder={t.contact.emailPlaceholder} name="email" required maxLength={80} value={form.email} onChange={onChange}
                     className="bg-white/5 border-white/10 text-white placeholder:text-slate-500 rounded-xl focus:border-blue-500/50" />
                 </div>
-                <Input placeholder="Asunto" name="subject" required value={form.subject} onChange={onChange}
+                <Input placeholder={t.contact.subjectPlaceholder} name="subject" required maxLength={150} value={form.subject} onChange={onChange}
                   className="bg-white/5 border-white/10 text-white placeholder:text-slate-500 rounded-xl focus:border-blue-500/50" />
-                <Textarea placeholder="Mensaje" name="message" rows={5} required value={form.message} onChange={onChange}
+                <Textarea placeholder={t.contact.messagePlaceholder} name="message" rows={5} required maxLength={3000} value={form.message} onChange={onChange}
                   className="bg-white/5 border-white/10 text-white placeholder:text-slate-500 rounded-xl focus:border-blue-500/50 resize-none" />
 
                 <AnimatePresence mode="wait">
@@ -1031,7 +1152,7 @@ export default function Portfolio() {
                         borderRadius: '10px', padding: '12px', textAlign: 'center',
                         color: '#86efac', fontSize: '0.85rem'
                       }}>
-                      ✓ Mensaje enviado correctamente
+                      {t.contact.sent}
                     </motion.div>
                   ) : status === 'error' ? (
                     <motion.div key="err" initial={{ opacity: 0 }} animate={{ opacity: 1 }}
@@ -1040,7 +1161,7 @@ export default function Portfolio() {
                         borderRadius: '10px', padding: '12px', textAlign: 'center',
                         color: '#fca5a5', fontSize: '0.85rem'
                       }}>
-                      ✗ Error al enviar. Inténtalo de nuevo.
+                      {t.contact.error}
                     </motion.div>
                   ) : (
                     <motion.button
@@ -1058,7 +1179,7 @@ export default function Portfolio() {
                         boxShadow: '0 4px 16px rgba(79,139,255,0.3)',
                       }}
                     >
-                      {status === 'sending' ? 'Enviando...' : 'Enviar Mensaje'}
+                      {status === 'sending' ? t.contact.sending : t.contact.sendBtn}
                     </motion.button>
                   )}
                 </AnimatePresence>
@@ -1074,7 +1195,7 @@ export default function Portfolio() {
       <footer style={{
         padding: '28px 24px',
         background: 'var(--bg-base)',
-        borderTop: '1px solid rgba(255,255,255,0.05)',
+        borderTop: '1px solid var(--footer-border)',
         textAlign: 'center',
       }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'center' }}>
@@ -1082,7 +1203,7 @@ export default function Portfolio() {
             {'<pablo />'}
           </span>
           <p style={{ color: 'var(--text-subtle)', fontSize: '0.75rem' }}>
-            © {new Date().getFullYear()} Pablo González Silva · Astro · React · Framer Motion
+            {t.footer.rights.replace('{year}', String(new Date().getFullYear()))}
           </p>
           <div style={{ display: 'flex', gap: '14px' }}>
             {[
@@ -1103,5 +1224,14 @@ export default function Portfolio() {
         </div>
       </footer>
     </div>
+  )
+}
+
+// ── Default export wraps everything in AppProvider ────────────
+export default function Portfolio() {
+  return (
+    <AppProvider>
+      <PortfolioContent />
+    </AppProvider>
   )
 }

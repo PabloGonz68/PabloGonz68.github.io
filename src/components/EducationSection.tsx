@@ -2,60 +2,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { GraduationCap, Award, Calendar, MapPin, BookOpen, Shield } from 'lucide-react'
 import ScrollReveal from './ScrollReveal'
-
-// ── Data ──────────────────────────────────────────────────────
-const EDUCATION = [
-  {
-    degree: 'Curso de Especialización en Ciberseguridad',
-    institution: 'IES Rafael Alberti',
-    location: 'Cádiz, España',
-    period: 'Sept. 2025 — Jun. 2026',
-    type: 'Formación Oficial',
-    icon: Shield,
-    color: '#22d3ee',
-    current: true,
-    description: 'Especialización en análisis de vulnerabilidades, hacking ético, criptografía y defensa de sistemas y redes.',
-  },
-  {
-    degree: 'Grado Superior en Desarrollo de Aplicaciones Web (DAW)',
-    institution: 'IES Rafael Alberti',
-    location: 'Cádiz, España',
-    period: 'Sept. 2024 — Jun. 2025',
-    type: 'Formación Oficial',
-    icon: GraduationCap,
-    color: '#4f8bff',
-    current: false,
-    description: 'Especialización en tecnologías web modernas: HTML, CSS, JavaScript, frameworks frontend, backend con PHP y despliegue de aplicaciones.',
-  },
-  {
-    degree: 'Grado Superior en Desarrollo de Aplicaciones Multiplataforma (DAM)',
-    institution: 'Staff Formación',
-    location: 'Cádiz, España',
-    period: 'Sept. 2022 — Jun. 2024',
-    type: 'Formación Oficial',
-    icon: BookOpen,
-    color: '#a855f7',
-    current: false,
-    description: 'Formación en desarrollo de aplicaciones de escritorio, móviles y servicios web. Programación orientada a objetos con Java y gestión de bases de datos.',
-  },
-]
-
-const CERTS = [
-  {
-    title: 'Desarrollo de Servicios Web REST en Java con Spring Boot',
-    platform: 'Udemy',
-    date: 'Marzo 2024',
-    color: '#f97316',
-    tags: ['Java', 'Spring Boot', 'REST API'],
-  },
-  {
-    title: 'Spring Boot: De cero a experto',
-    platform: 'Udemy',
-    date: 'Enero 2024',
-    color: '#4ade80',
-    tags: ['Java', 'Spring Boot', 'Backend'],
-  },
-]
+import { useApp } from '../lib/AppContext'
 
 // ── Utilities ─────────────────────────────────────────────────
 const TAG_COLORS: Record<string, string> = {
@@ -65,8 +12,19 @@ const TAG_COLORS: Record<string, string> = {
   'Backend':      '#c084fc',
 }
 
+const EDU_EXTRAS = [
+  { icon: Shield, color: '#22d3ee', typeKey: 'official', current: true, institution: 'IES Rafael Alberti', location: 'Cádiz, España', period: 'Sept. 2025 — Jun. 2026' },
+  { icon: GraduationCap, color: '#4f8bff', typeKey: 'official', current: false, institution: 'IES Rafael Alberti', location: 'Cádiz, España', period: 'Sept. 2024 — Jun. 2025' },
+  { icon: BookOpen, color: '#a855f7', typeKey: 'official', current: false, institution: 'Staff Formación', location: 'Cádiz, España', period: 'Sept. 2022 — Jun. 2024' },
+]
+
+const CERT_EXTRAS = [
+  { platform: 'Udemy', color: '#f97316', tags: ['Java', 'Spring Boot', 'REST API'] },
+  { platform: 'Udemy', color: '#4ade80', tags: ['Java', 'Spring Boot', 'Backend'] },
+]
+
 // ── Education card ────────────────────────────────────────────
-function EduCard({ item, i }: { item: typeof EDUCATION[0]; i: number }) {
+function EduCard({ item, i, currentText, typeText }: { item: any; i: number; currentText: string; typeText: string }) {
   const [hovered, setHovered] = useState(false)
   const Icon = item.icon
 
@@ -93,27 +51,25 @@ function EduCard({ item, i }: { item: typeof EDUCATION[0]; i: number }) {
           >
             <Icon size={15} style={{ color: item.color }} />
           </motion.div>
-          {/* Connector line (not on last) */}
-          {i < EDUCATION.length - 1 && (
-            <div style={{
-              flex: 1, width: '1px', minHeight: '24px',
-              background: `linear-gradient(180deg, ${item.color}30, rgba(79,139,255,0.1))`,
-              marginTop: '4px',
-            }} />
-          )}
+          {/* Connector line */}
+          <div style={{
+            flex: 1, width: '1px', minHeight: '24px',
+            background: `linear-gradient(180deg, ${item.color}30, rgba(79,139,255,0.1))`,
+            marginTop: '4px',
+          }} />
         </div>
 
         {/* Card */}
         <motion.div
           onHoverStart={() => setHovered(true)}
           onHoverEnd={() => setHovered(false)}
-          animate={{ borderColor: hovered ? `${item.color}35` : 'rgba(255,255,255,0.07)' }}
+          animate={{ borderColor: hovered ? `${item.color}35` : 'var(--card-border)' }}
           whileHover={{ x: 4 }}
           transition={{ duration: 0.25 }}
           style={{
-            flex: 1, marginBottom: i < EDUCATION.length - 1 ? '28px' : '0',
-            background: hovered ? `${item.color}08` : 'rgba(255,255,255,0.025)',
-            border: '1px solid rgba(255,255,255,0.07)',
+            flex: 1, marginBottom: '28px',
+            background: hovered ? `${item.color}08` : 'var(--card-bg)',
+            border: '1px solid var(--card-border)',
             borderLeft: `3px solid ${item.color}`,
             borderRadius: '14px', padding: '18px 20px',
             transition: 'background 0.3s, border-color 0.3s',
@@ -141,11 +97,11 @@ function EduCard({ item, i }: { item: typeof EDUCATION[0]; i: number }) {
                     }}
                   />
                 )}
-                {item.current ? 'Actualmente' : item.type}
+                {item.current ? currentText : typeText}
               </span>
 
               <h3 style={{
-                fontSize: '0.9rem', fontWeight: 700, color: '#f1f5ff',
+                fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-primary)',
                 lineHeight: 1.35, marginBottom: '4px',
               }}>
                 {item.degree}
@@ -187,7 +143,7 @@ function EduCard({ item, i }: { item: typeof EDUCATION[0]; i: number }) {
 }
 
 // ── Cert card ─────────────────────────────────────────────────
-function CertCard({ cert, i }: { cert: typeof CERTS[0]; i: number }) {
+function CertCard({ cert, i }: { cert: any; i: number }) {
   const [hovered, setHovered] = useState(false)
 
   return (
@@ -198,14 +154,13 @@ function CertCard({ cert, i }: { cert: typeof CERTS[0]; i: number }) {
         whileHover={{ y: -4, boxShadow: `0 12px 32px rgba(0,0,0,0.35), 0 0 0 1px ${cert.color}25` }}
         transition={{ duration: 0.25 }}
         style={{
-          background: hovered ? `${cert.color}06` : 'rgba(255,255,255,0.02)',
-          border: `1px solid ${hovered ? cert.color + '30' : 'rgba(255,255,255,0.07)'}`,
+          background: hovered ? `${cert.color}06` : 'var(--card-bg)',
+          border: `1px solid ${hovered ? cert.color + '30' : 'var(--card-border)'}`,
           borderRadius: '14px', padding: '18px 20px',
           transition: 'background 0.3s, border-color 0.3s',
           position: 'relative', overflow: 'hidden',
         }}
       >
-        {/* Decorative corner glow */}
         <div style={{
           position: 'absolute', top: 0, right: 0,
           width: '80px', height: '80px',
@@ -213,7 +168,6 @@ function CertCard({ cert, i }: { cert: typeof CERTS[0]; i: number }) {
           pointerEvents: 'none',
         }} />
 
-        {/* Platform badge */}
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           marginBottom: '10px',
@@ -238,14 +192,14 @@ function CertCard({ cert, i }: { cert: typeof CERTS[0]; i: number }) {
         </div>
 
         <p style={{
-          fontSize: '0.85rem', fontWeight: 600, color: '#e2e8f0',
+          fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)',
           lineHeight: 1.4, marginBottom: '12px',
         }}>
           {cert.title}
         </p>
 
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
-          {cert.tags.map(tag => (
+          {cert.tags.map((tag: string) => (
             <span key={tag} style={{
               fontSize: '0.65rem', fontWeight: 600, fontFamily: 'var(--font-mono)',
               padding: '2px 9px', borderRadius: '999px',
@@ -280,7 +234,7 @@ function SH({ label, title, sub }: { label: string; title: string; sub: string }
       <h2 style={{
         fontFamily: 'var(--font-sans)', fontWeight: 800,
         fontSize: 'clamp(1.8rem, 4vw, 2.9rem)',
-        letterSpacing: '-0.025em', color: '#f1f5ff', marginBottom: '12px',
+        letterSpacing: '-0.025em', color: 'var(--text-primary)', marginBottom: '12px',
       }}>{title}</h2>
       <p style={{ color: 'var(--text-muted)', fontSize: '0.92rem', maxWidth: '420px', margin: '0 auto', lineHeight: 1.65 }}>{sub}</p>
     </motion.div>
@@ -321,6 +275,18 @@ function ColHeader({ icon: Icon, label, color }: { icon: React.ElementType; labe
 
 // ── Main export ───────────────────────────────────────────────
 export default function EducationSection() {
+  const { t } = useApp()
+
+  const EDUCATION = t.education.list.map((edu, i) => ({
+    ...edu,
+    ...EDU_EXTRAS[i],
+  }))
+
+  const CERTS = t.education.certList.map((cert, i) => ({
+    ...cert,
+    ...CERT_EXTRAS[i],
+  }))
+
   return (
     <section
       id="education"
@@ -343,9 +309,9 @@ export default function EducationSection() {
 
       <div className="container mx-auto px-6 relative z-10">
         <SH
-          label="> formación"
-          title="Educación"
-          sub="Formación académica oficial y certificaciones en tecnologías modernas"
+          label={t.education.label}
+          title={t.education.title}
+          sub={t.education.sub}
         />
 
         {/* Two-column grid */}
@@ -359,17 +325,17 @@ export default function EducationSection() {
 
           {/* ── Left: Academic */}
           <div>
-            <ColHeader icon={GraduationCap} label="Formación Académica" color="#4f8bff" />
+            <ColHeader icon={GraduationCap} label={t.education.academic} color="#4f8bff" />
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               {EDUCATION.map((item, i) => (
-                <EduCard key={item.degree} item={item} i={i} />
+                <EduCard key={item.degree} item={item} i={i} currentText={t.education.current} typeText={t.education.official} />
               ))}
             </div>
           </div>
 
           {/* ── Right: Certifications */}
           <div>
-            <ColHeader icon={Award} label="Certificaciones" color="#f97316" />
+            <ColHeader icon={Award} label={t.education.certs} color="#f97316" />
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {CERTS.map((cert, i) => (
                 <CertCard key={cert.title} cert={cert} i={i} />
@@ -385,7 +351,7 @@ export default function EducationSection() {
                   marginTop: '8px',
                   padding: '14px 18px',
                   borderRadius: '12px',
-                  border: '1px dashed rgba(255,255,255,0.09)',
+                  border: '1px dashed var(--card-border)',
                   textAlign: 'center',
                 }}
               >
@@ -393,7 +359,7 @@ export default function EducationSection() {
                   fontSize: '0.72rem', fontFamily: 'var(--font-mono)',
                   color: 'var(--text-subtle)', letterSpacing: '0.06em',
                 }}>
-                  + Aprendizaje continuo en curso
+                  {t.education.continuousLearning}
                 </p>
               </motion.div>
             </div>

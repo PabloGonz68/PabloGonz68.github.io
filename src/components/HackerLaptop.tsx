@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from 'framer-motion'
+import { useApp } from '../lib/AppContext'
 
 // ── Typewriter para la terminal ──────────────────────────────
 function useTerminalLines(lines: { text: string; delay: number }[]) {
@@ -67,6 +68,7 @@ const expandVariants = {
 
 // ── Componente principal ─────────────────────────────────────
 export default function HackerLaptop() {
+  const { lang } = useApp()
   const [phase, setPhase] = useState<'idle' | 'launch' | 'expand'>('idle')
   const [hovered, setHovered] = useState(false)
 
@@ -141,7 +143,7 @@ export default function HackerLaptop() {
                 fontSize: '0.9rem', letterSpacing: '0.08em',
                 textShadow: '0 0 20px rgba(0,230,118,0.7)', marginBottom: '6px',
               }}>
-                Conectando...
+                {lang === 'es' ? 'Conectando...' : 'Connecting...'}
               </p>
               <motion.div style={{
                 width: '180px', height: '2px',
@@ -317,7 +319,7 @@ export default function HackerLaptop() {
                       backdropFilter: 'blur(12px)', letterSpacing: '0.03em',
                     }}
                   >
-                    Ver write-ups →
+                    {lang === 'es' ? 'Ver write-ups →' : 'View write-ups →'}
                   </motion.div>
                 )}
               </AnimatePresence>

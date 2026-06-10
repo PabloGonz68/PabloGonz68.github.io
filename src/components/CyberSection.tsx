@@ -1,11 +1,10 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import HackerLaptop from './HackerLaptop'
+import { useApp } from '../lib/AppContext'
 
 // ── Inline SVG Icons ─────────────────────────────────────────
-// For tools without public SVGs, custom icons are used.
 const ICONS: Record<string, React.ReactNode> = {
-  // ── Downloaded SVGs (via /assets/svgs/cyber/) ──
   metasploit: <img src="/assets/svgs/cyber/metasploit.svg" alt="Metasploit" style={{ width: '100%', height: '100%', filter: 'brightness(0) invert(1)' }} />,
   wireshark:  <img src="/assets/svgs/cyber/wireshark.svg"  alt="Wireshark"  style={{ width: '100%', height: '100%', filter: 'brightness(0) invert(1)' }} />,
   burpsuite:  <img src="/assets/svgs/cyber/burpsuite.svg"  alt="Burp Suite" style={{ width: '100%', height: '100%', filter: 'brightness(0) invert(1)' }} />,
@@ -18,16 +17,12 @@ const ICONS: Record<string, React.ReactNode> = {
   snort:      <img src="/assets/svgs/cyber/snort.svg"      alt="Snort"      style={{ width: '100%', height: '100%', filter: 'brightness(0) invert(1)' }} />,
   opnsense:   <img src="/assets/svgs/cyber/opnsense.svg"   alt="OPNsense"   style={{ width: '100%', height: '100%', filter: 'brightness(0) invert(1)' }} />,
   sonarqube:  <img src="/assets/svgs/cyber/sonarqube.svg"  alt="SonarQube"  style={{ width: '100%', height: '100%', filter: 'brightness(0) invert(1)' }} />,
-
-  // ── Custom inline SVGs for tools without public icons ──
-
   wazuh: (
     <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
       <path d="M12 1L2 6v6c0 5.25 4.25 10.15 10 11.35C17.75 22.15 22 17.25 22 12V6L12 1zm0 2.18L20 7.3V12c0 4.1-3.25 7.95-8 9.1C7.25 19.95 4 16.1 4 12V7.3l8-4.12z"/>
       <path d="M12 7l-4 2v3c0 2.5 1.75 4.85 4 5.45 2.25-.6 4-2.95 4-5.45V9l-4-2z" opacity=".7"/>
     </svg>
   ),
-
   nmap: (
     <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
       <circle cx="12" cy="12" r="2"/>
@@ -36,39 +31,33 @@ const ICONS: Record<string, React.ReactNode> = {
       <circle cx="12" cy="12" r="5" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="3 2"/>
     </svg>
   ),
-
   gobuster: (
     <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
       <path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/>
       <path d="M7 9h5M9.5 6.5v5" strokeWidth="1.2" stroke="currentColor" fill="none" strokeLinecap="round"/>
     </svg>
   ),
-
   johntheripper: (
     <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
       <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
     </svg>
   ),
-
   bacula: (
     <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
       <path d="M20 6h-2.18c.07-.44.18-.88.18-1.34C18 2.54 15.46 0 12.34 0c-1.71 0-3.22.77-4.27 1.99L6.5 3.5 4.96 2.18C4.39 1.67 3.7 1.38 3 1.38 1.34 1.38 0 2.72 0 4.38c0 .94.44 1.78 1.13 2.34L2 7.44V19c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zM11 17H9v-2h2v2zm0-4H9v-4h2v4zm4 4h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
     </svg>
   ),
-
   volatility: (
     <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
       <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9H9V9h10v2zm-4 4H9v-2h6v2zm4-8H9V5h10v2z"/>
       <path d="M13 9l1.5 2.5L16 10l2 3H10l3-4z" opacity=".6"/>
     </svg>
   ),
-
   autopsy: (
     <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
       <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/>
     </svg>
   ),
-
   ftkimager: (
     <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
       <path d="M2 6v14c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2H4C2.9 4 2 4.9 2 6zm2 0h16v14H4V6z"/>
@@ -77,14 +66,12 @@ const ICONS: Record<string, React.ReactNode> = {
       <path d="M8 6h8v2H8z" opacity=".5"/>
     </svg>
   ),
-
   owaspzap: (
     <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
       <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" opacity=".2"/>
       <path d="M12 3.18L5 6.3V11c0 4.52 3.02 8.76 7 9.93 3.98-1.17 7-5.41 7-9.93V6.3l-7-3.12zM13 17h-2v-2h2v2zm0-4h-2V7h2v6z"/>
     </svg>
   ),
-
   dirbuster: (
     <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
       <path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-6 10H6v-2h8v2zm2-4H6v-2h10v2z"/>
@@ -94,10 +81,9 @@ const ICONS: Record<string, React.ReactNode> = {
 }
 
 // ── Tool data by category ────────────────────────────────────
-const CATEGORIES = [
+const CATEGORIES_BASE = [
   {
     id: 'blue',
-    label: 'Blue Team & Infraestructura',
     color: '#60a5fa',
     glowColor: 'rgba(96,165,250,0.15)',
     borderColor: 'rgba(96,165,250,0.25)',
@@ -112,7 +98,6 @@ const CATEGORIES = [
   },
   {
     id: 'red',
-    label: 'Red Team & Auditoría',
     color: '#f87171',
     glowColor: 'rgba(248,113,113,0.15)',
     borderColor: 'rgba(248,113,113,0.25)',
@@ -125,7 +110,6 @@ const CATEGORIES = [
   },
   {
     id: 'web',
-    label: 'Seguridad Web & DevSecOps',
     color: '#fb923c',
     glowColor: 'rgba(251,146,60,0.15)',
     borderColor: 'rgba(251,146,60,0.25)',
@@ -137,7 +121,6 @@ const CATEGORIES = [
   },
   {
     id: 'forensics',
-    label: 'Análisis Forense',
     color: '#c084fc',
     glowColor: 'rgba(192,132,252,0.15)',
     borderColor: 'rgba(192,132,252,0.25)',
@@ -148,6 +131,12 @@ const CATEGORIES = [
       { name: 'Wireshark',    iconKey: 'wireshark',  cat: 'Traffic Analysis'  },
     ],
   },
+]
+
+const WORKSHOP_EXTRAS = [
+  { color: '#a855f7', tags: ['Red TOR', 'OSINT', 'Privacidad'], github: 'https://github.com/alcinacarlos/Taller-TOR-Grupo2', dates: [{ label: '', date: '6 Feb 2026' }] },
+  { color: '#22d3ee', tags: ['Concienciación', 'Ingeniería Social', 'Educación'], dates: [{ label: '', date: '23 Feb 2026' }, { label: '', date: '25 Feb 2026' }] },
+  { color: '#4ade80', tags: ['CTF', 'Forense', 'Criptografía', 'Web', 'OSINT'] },
 ]
 
 // ── Stagger variants ──────────────────────────────────────────
@@ -161,12 +150,7 @@ const itemV = {
 }
 
 // ── Tool card ─────────────────────────────────────────────────
-function ToolCard({
-  tool, accent,
-}: {
-  tool: { name: string; iconKey: string; cat: string }
-  accent: string
-}) {
+function ToolCard({ tool, accent }: { tool: any; accent: string }) {
   const [h, setH] = useState(false)
   const icon = ICONS[tool.iconKey]
 
@@ -177,8 +161,8 @@ function ToolCard({
       onMouseLeave={() => setH(false)}
       whileHover={{ y: -4, transition: { duration: 0.2 } }}
       style={{
-        background: h ? `${accent}0a` : 'rgba(255,255,255,0.02)',
-        border: `1px solid ${h ? accent + '40' : 'rgba(255,255,255,0.07)'}`,
+        background: h ? `${accent}0a` : 'var(--card-bg)',
+        border: `1px solid ${h ? accent + '40' : 'var(--card-border)'}`,
         borderRadius: '14px',
         padding: '16px 14px 14px',
         cursor: 'default',
@@ -190,14 +174,12 @@ function ToolCard({
         display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center',
       }}
     >
-      {/* Spot glow */}
       <div style={{
         position: 'absolute', inset: 0, pointerEvents: 'none',
         background: h ? `radial-gradient(ellipse at 50% 0%, ${accent}18 0%, transparent 65%)` : 'transparent',
         transition: 'background 0.3s',
       }} />
 
-      {/* Icon container */}
       <div style={{
         width: '36px', height: '36px',
         borderRadius: '10px',
@@ -216,7 +198,7 @@ function ToolCard({
 
       <div style={{
         fontWeight: 600, fontSize: '0.78rem',
-        color: h ? '#f1f5ff' : '#c8d5f0',
+        color: h ? 'var(--text-primary)' : 'var(--text-muted)',
         marginBottom: '3px',
         transition: 'color 0.2s',
         lineHeight: 1.25,
@@ -233,7 +215,6 @@ function ToolCard({
         {tool.cat}
       </div>
 
-      {/* Bottom accent line */}
       <div style={{
         position: 'absolute', bottom: 0, left: 0, right: 0, height: '2px',
         background: `linear-gradient(90deg, transparent, ${accent}70, transparent)`,
@@ -244,7 +225,7 @@ function ToolCard({
 }
 
 // ── Category block ────────────────────────────────────────────
-function CategoryBlock({ cat, i }: { cat: typeof CATEGORIES[0]; i: number }) {
+function CategoryBlock({ cat, i }: { cat: any; i: number }) {
   const [expanded, setExpanded] = useState(true)
 
   return (
@@ -254,13 +235,12 @@ function CategoryBlock({ cat, i }: { cat: typeof CATEGORIES[0]; i: number }) {
       viewport={{ once: true, amount: 0.15 }}
       transition={{ duration: 0.6, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] }}
       style={{
-        background: 'rgba(255,255,255,0.018)',
+        background: 'var(--card-bg)',
         border: `1px solid ${cat.borderColor}`,
         borderRadius: '18px',
         overflow: 'hidden',
       }}
     >
-      {/* Category header */}
       <button
         onClick={() => setExpanded(e => !e)}
         style={{
@@ -274,7 +254,6 @@ function CategoryBlock({ cat, i }: { cat: typeof CATEGORIES[0]; i: number }) {
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          {/* Color dot */}
           <div style={{
             width: '8px', height: '8px', borderRadius: '50%',
             background: cat.color,
@@ -282,7 +261,7 @@ function CategoryBlock({ cat, i }: { cat: typeof CATEGORIES[0]; i: number }) {
             flexShrink: 0,
           }} />
           <span style={{
-            fontSize: '0.82rem', fontWeight: 700, color: '#e2e8f0',
+            fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-primary)',
             letterSpacing: '0.01em',
           }}>
             {cat.label}
@@ -308,7 +287,6 @@ function CategoryBlock({ cat, i }: { cat: typeof CATEGORIES[0]; i: number }) {
         </motion.div>
       </button>
 
-      {/* Tools grid */}
       <AnimatePresence initial={false}>
         {expanded && (
           <motion.div
@@ -330,7 +308,7 @@ function CategoryBlock({ cat, i }: { cat: typeof CATEGORIES[0]; i: number }) {
                 padding: '16px',
               }}
             >
-              {cat.tools.map(tool => (
+              {cat.tools.map((tool: any) => (
                 <ToolCard key={tool.name} tool={tool} accent={cat.color} />
               ))}
             </motion.div>
@@ -348,7 +326,7 @@ interface WorkshopCardProps {
   title: string
   subtitle: string
   venue: string
-  dates: { label: string; date: string }[]
+  dates: { label?: string; date: string }[]
   description: string
   tags: string[]
   github?: string
@@ -364,8 +342,8 @@ function WorkshopCard({ color, badge, title, subtitle, venue, dates, description
       whileHover={{ y: -5, boxShadow: `0 20px 48px rgba(0,0,0,0.5), 0 0 0 1px ${color}30` }}
       transition={{ duration: 0.25 }}
       style={{
-        background: h ? `${color}07` : 'rgba(255,255,255,0.02)',
-        border: `1px solid ${h ? color + '35' : 'rgba(255,255,255,0.07)'}`,
+        background: h ? `${color}07` : 'var(--card-bg)',
+        border: `1px solid ${h ? color + '35' : 'var(--card-border)'}`,
         borderTop: `3px solid ${color}`,
         borderRadius: '18px',
         padding: '22px 22px 20px',
@@ -374,7 +352,6 @@ function WorkshopCard({ color, badge, title, subtitle, venue, dates, description
         display: 'flex', flexDirection: 'column', gap: '14px',
       }}
     >
-      {/* Corner glow */}
       <div style={{
         position: 'absolute', top: 0, right: 0,
         width: '120px', height: '100px',
@@ -382,10 +359,8 @@ function WorkshopCard({ color, badge, title, subtitle, venue, dates, description
         pointerEvents: 'none',
       }} />
 
-      {/* Header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '10px' }}>
         <div style={{ flex: 1 }}>
-          {/* Badge */}
           <span style={{
             display: 'inline-block', marginBottom: '8px',
             fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.12em',
@@ -397,7 +372,7 @@ function WorkshopCard({ color, badge, title, subtitle, venue, dates, description
             {badge}
           </span>
           <h4 style={{
-            fontSize: '0.92rem', fontWeight: 700, color: '#f1f5ff',
+            fontSize: '0.92rem', fontWeight: 700, color: 'var(--text-primary)',
             lineHeight: 1.3, marginBottom: '2px',
           }}>{title}</h4>
           <p style={{
@@ -410,7 +385,6 @@ function WorkshopCard({ color, badge, title, subtitle, venue, dates, description
           }}>{context}</p>
         </div>
 
-        {/* GitHub link */}
         {github && (
           <a
             href={github}
@@ -420,8 +394,8 @@ function WorkshopCard({ color, badge, title, subtitle, venue, dates, description
             style={{
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               width: '32px', height: '32px', borderRadius: '8px', flexShrink: 0,
-              background: 'rgba(255,255,255,0.05)',
-              border: '1px solid rgba(255,255,255,0.1)',
+              background: 'rgba(100,100,100,0.1)',
+              border: '1px solid rgba(100,100,100,0.2)',
               color: 'var(--text-subtle)',
               transition: 'background 0.2s, color 0.2s, border-color 0.2s',
             }}
@@ -431,9 +405,9 @@ function WorkshopCard({ color, badge, title, subtitle, venue, dates, description
               ;(e.currentTarget as HTMLElement).style.borderColor = `${color}40`
             }}
             onMouseLeave={e => {
-              (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)'
+              (e.currentTarget as HTMLElement).style.background = 'rgba(100,100,100,0.1)'
               ;(e.currentTarget as HTMLElement).style.color = 'var(--text-subtle)'
-              ;(e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.1)'
+              ;(e.currentTarget as HTMLElement).style.borderColor = 'rgba(100,100,100,0.2)'
             }}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
@@ -443,10 +417,9 @@ function WorkshopCard({ color, badge, title, subtitle, venue, dates, description
         )}
       </div>
 
-      {/* Venue & Dates */}
       <div style={{
-        background: 'rgba(255,255,255,0.03)',
-        border: '1px solid rgba(255,255,255,0.06)',
+        background: 'rgba(100,100,100,0.05)',
+        border: '1px solid rgba(100,100,100,0.1)',
         borderRadius: '10px', padding: '10px 14px',
         display: 'flex', flexDirection: 'column', gap: '6px',
       }}>
@@ -483,13 +456,11 @@ function WorkshopCard({ color, badge, title, subtitle, venue, dates, description
         ))}
       </div>
 
-      {/* Description */}
       <p style={{
         fontSize: '0.8rem', color: 'var(--text-muted)',
         lineHeight: 1.65, margin: 0,
       }}>{description}</p>
 
-      {/* Tags */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
         {tags.map(t => (
           <span key={t} style={{
@@ -505,20 +476,35 @@ function WorkshopCard({ color, badge, title, subtitle, venue, dates, description
 
 // ── Main component ────────────────────────────────────────────
 export default function CyberSection() {
+  const { t } = useApp()
+
+  const CATEGORIES = CATEGORIES_BASE.map((base, i) => ({
+    ...base,
+    label: t.cyber.categories[i].label,
+  }))
+
+  const WORKSHOPS = t.cyber.workshopList.map((w, i) => {
+    let dates = WORKSHOP_EXTRAS[i].dates
+    if (!dates) dates = t.cyber.ctfDates
+    return {
+      ...w,
+      ...WORKSHOP_EXTRAS[i], 
+      dates,
+    }
+  })
+
   return (
     <section
       id="cybersecurity"
       style={{
         padding: '100px 0 120px',
-        background: 'linear-gradient(180deg, #04060f 0%, #060c1a 50%, #04060f 100%)',
+        background: 'linear-gradient(180deg, var(--bg-base) 0%, var(--bg-surface) 50%, var(--bg-base) 100%)',
         position: 'relative',
         overflow: 'hidden',
       }}
     >
-      {/* Grid bg */}
       <div className="grid-bg" style={{ position: 'absolute', inset: 0, opacity: 0.6, pointerEvents: 'none' }} />
 
-      {/* Glow accent */}
       <div style={{
         position: 'absolute', top: '20%', left: '50%', transform: 'translateX(-50%)',
         width: '800px', height: '400px',
@@ -528,7 +514,6 @@ export default function CyberSection() {
 
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px', position: 'relative', zIndex: 1 }}>
 
-        {/* ── Header ── */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -541,7 +526,7 @@ export default function CyberSection() {
             color: 'rgba(79,139,255,0.6)', letterSpacing: '0.3em',
             textTransform: 'uppercase', marginBottom: '10px',
           }}>
-            {'>'} especialización
+            {t.cyber.label}
           </p>
           <h2 style={{
             fontFamily: 'var(--font-sans)', fontWeight: 800,
@@ -549,17 +534,16 @@ export default function CyberSection() {
             letterSpacing: '-0.025em', lineHeight: 1.1,
             marginBottom: '14px',
           }}>
-            <span className="text-gradient-cyan">Ciberseguridad</span>
+            <span className="text-gradient-cyan">{t.cyber.title}</span>
           </h2>
           <p style={{
             color: 'var(--text-muted)', fontSize: '0.95rem',
             maxWidth: '460px', margin: '0 auto', lineHeight: 1.7,
           }}>
-            Curso de especialización · Stack completo de herramientas ofensivas, defensivas y forenses
+            {t.cyber.sub}
           </p>
         </motion.div>
 
-        {/* ── Main layout: laptop + categories ── */}
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'minmax(0,380px) 1fr',
@@ -568,16 +552,14 @@ export default function CyberSection() {
         }}
           className="flex-col-mobile"
         >
-
-          {/* Laptop panel — sticky */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             style={{
-              background: 'rgba(255,255,255,0.02)',
-              border: '1px solid rgba(79,139,255,0.15)',
+              background: 'var(--card-bg)',
+              border: '1px solid var(--card-border)',
               borderRadius: '20px',
               padding: '40px 24px 48px',
               display: 'flex',
@@ -601,11 +583,10 @@ export default function CyberSection() {
               color: 'var(--text-subtle)', textAlign: 'center', marginTop: '4px',
               letterSpacing: '0.02em',
             }}>
-              Click para acceder a mis write-ups
+              {t.cyber.writeups}
             </p>
           </motion.div>
 
-          {/* Categories column */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {CATEGORIES.map((cat, i) => (
               <CategoryBlock key={cat.id} cat={cat} i={i} />
@@ -613,7 +594,6 @@ export default function CyberSection() {
           </div>
         </div>
 
-        {/* ── Stats bar ── */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -622,22 +602,21 @@ export default function CyberSection() {
           style={{
             display: 'flex', justifyContent: 'center', gap: '0',
             marginTop: '56px',
-            background: 'rgba(255,255,255,0.02)',
-            border: '1px solid rgba(255,255,255,0.07)',
+            background: 'var(--card-bg)',
+            border: '1px solid var(--card-border)',
             borderRadius: '16px',
             overflow: 'hidden',
           }}
         >
           {[
-            { val: '17+', label: 'Herramientas' },
-            { val: '4',   label: 'Categorías'   },
-            { val: 'CEH', label: 'Track'        },
+            { val: '17+', label: t.cyber.statsTools },
+            { val: '4',   label: t.cyber.statsCategories },
           ].map((s, i) => (
             <div
               key={s.label}
               style={{
                 flex: 1, textAlign: 'center', padding: '24px 16px',
-                borderRight: i < 2 ? '1px solid rgba(255,255,255,0.06)' : 'none',
+                borderRight: i < 2 ? '1px solid var(--card-border)' : 'none',
               }}
             >
               <div style={{
@@ -652,7 +631,6 @@ export default function CyberSection() {
           ))}
         </motion.div>
 
-        {/* ── Talleres & Actividades ── */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -660,75 +638,29 @@ export default function CyberSection() {
           transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
           style={{ marginTop: '72px' }}
         >
-          {/* Sub-header */}
           <div style={{ textAlign: 'center', marginBottom: '40px' }}>
             <p style={{
               fontFamily: 'var(--font-mono)', fontSize: '0.68rem',
               color: 'rgba(34,211,238,0.55)', letterSpacing: '0.3em',
               textTransform: 'uppercase', marginBottom: '8px',
-            }}>{'>'} actividad docente</p>
+            }}>{t.cyber.activityLabel}</p>
             <h3 style={{
               fontFamily: 'var(--font-sans)', fontWeight: 800,
               fontSize: 'clamp(1.4rem, 3vw, 2rem)',
-              letterSpacing: '-0.02em', color: '#f1f5ff',
+              letterSpacing: '-0.02em', color: 'var(--text-primary)',
             }}>
-              Talleres & <span className="text-gradient-cyan">Ponencias</span>
+              {t.cyber.workshops} <span className="text-gradient-cyan">{t.cyber.talks}</span>
             </h3>
           </div>
 
-          {/* Cards */}
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
             gap: '20px',
           }}>
-
-            {/* ── Taller TOR ── */}
-            <WorkshopCard
-              color="#a855f7"
-              badge="Ponencia"
-              title="El lado invisible de internet"
-              subtitle="Red TOR, anonimato y rastros digitales"
-              venue="IES Sotero Hernández · Sevilla"
-              dates={[{ label: '', date: '6 Febrero 2026' }]}
-              description="Programa de concienciación en ciberseguridad dirigido a alumnos de la ESO y familias de todo el centro. Análisis de la red TOR, el anonimato en internet y la huella digital."
-              tags={['Red TOR', 'OSINT', 'Privacidad']}
-              github="https://github.com/alcinacarlos/Taller-TOR-Grupo2"
-              context="Plan de formación en ciberseguridad"
-            />
-
-            {/* ── Plan concienciación Rafael Alberti ── */}
-            <WorkshopCard
-              color="#22d3ee"
-              badge="Concienciación"
-              title="Programa de concienciación"
-              subtitle="en ciberseguridad"
-              venue="IES Rafael Alberti · Cádiz"
-              dates={[
-                { label: '', date: '23 Febrero 2026' },
-                { label: '', date: '25 Febrero 2026' },
-              ]}
-              description="Diseño e impartición de sesiones de concienciación sobre ciberseguridad para alumnos, profesores y familias del instituto."
-              tags={['Concienciación', 'Ingeniería Social', 'Educación']}
-              context="Plan de formación en ciberseguridad"
-            />
-
-            {/* ── CTF ── */}
-            <WorkshopCard
-              color="#4ade80"
-              badge="CTF"
-              title="CTF IES Rafael Alberti 2025/2026"
-              subtitle="Diseño y creación de retos"
-              venue="IES Rafael Alberti · Cádiz"
-              dates={[
-                { label: 'Fase Online', date: '20 – 22 Mar 2026' },
-                { label: 'Final Presencial', date: '26 Mar 2026' },
-              ]}
-              description="Diseño y creación de retos de Capture The Flag para el CTF organizado por el IES Rafael Alberti. Retos de forense, criptografía, web y OSINT."
-              tags={['CTF', 'Forense', 'Criptografía', 'Web', 'OSINT']}
-              context="Organizado por IES Rafael Alberti"
-            />
-
+            {WORKSHOPS.map((w, i) => (
+              <WorkshopCard key={i} {...w} />
+            ))}
           </div>
         </motion.div>
 
@@ -736,4 +668,3 @@ export default function CyberSection() {
     </section>
   )
 }
-
