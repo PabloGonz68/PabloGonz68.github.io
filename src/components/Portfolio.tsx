@@ -401,23 +401,15 @@ const GRADIENTS = [
 
 const PROJECTS_BASE = [
   { tech: ['React', 'Spring Boot', 'TypeScript', 'PostgreSQL', 'Docker'], image: '/projects/togethr.webp', github: 'https://github.com/PabloGonz68/Togethr', demo: 'https://proyecto-togethr-v1.vercel.app' },
-  { tech: ['React', 'Spring Boot', 'Java', 'MariaDB', 'Tailwind CSS'], image: '/projects/hospeda.webp', github: '#', demo: '#' },
+  { tech: ['React', 'Spring Boot', 'Java', 'MariaDB', 'Tailwind CSS'], image: '/projects/hospeda.webp', github: '#', demo: '#', inProgress: true },
   { tech: ['Java', 'MySQL', 'Swing'], image: '/projects/MixPlace.webp', github: 'https://github.com/PabloGonz68/MixPlace1.0', demo: '#' },
   { tech: ['Java', 'Android Studio', 'SQLite'], image: '/projects/unitidy (2).webp', github: 'https://github.com/PabloGonz68/UniTidy', demo: '#' },
 ]
 
-function ProjectCard({ p, i }: { p: { title: string; description: string; tech: string[]; image: string; github: string; demo: string }; i: number }) {
+function ProjectCard({ p, i }: { p: { title: string; description: string; tech: string[]; image: string; github: string; demo: string; inProgress?: boolean }; i: number }) {
   const [h, setH] = useState(false)
   const [imgErr, setImgErr] = useState(false)
-  const mx = useMotionValue(0); const my = useMotionValue(0)
-  const rx = useSpring(useTransform(my, [-0.5, 0.5], [5, -5]), { stiffness: 250, damping: 25 })
-  const ry = useSpring(useTransform(mx, [-0.5, 0.5], [-7, 7]), { stiffness: 250, damping: 25 })
-
-  const onMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const r = e.currentTarget.getBoundingClientRect()
-    mx.set((e.clientX - r.left) / r.width - 0.5)
-    my.set((e.clientY - r.top) / r.height - 0.5)
-  }
+  const { lang } = useApp()
 
   const TC: Record<string, string> = {
     React: '#22d3ee', 'Spring Boot': '#4ade80', Java: '#f87171',
@@ -427,18 +419,17 @@ function ProjectCard({ p, i }: { p: { title: string; description: string; tech: 
   }
 
   return (
-    <ScrollReveal variant="fadeInUp" delay={i * 0.1}>
+    <ScrollReveal variant="fadeInUp" delay={i * 0.1} className="h-full">
       <motion.div
-        onMouseMove={onMove}
-        onMouseLeave={() => { mx.set(0); my.set(0); setH(false) }}
+        onMouseLeave={() => setH(false)}
         onMouseEnter={() => setH(true)}
-        style={{
-          rotateX: rx, rotateY: ry,
-          transformStyle: 'preserve-3d',
-          perspective: 800,
-        }}
+        whileHover={{ y: -6 }}
+        transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+        className="h-full"
       >
         <div style={{
+          height: '100%',
+          display: 'flex', flexDirection: 'column',
           background: 'var(--card-bg)',
           border: `1px solid ${h ? 'rgba(79,139,255,0.3)' : 'var(--card-border)'}`,
           borderRadius: '18px', overflow: 'hidden',
@@ -447,7 +438,7 @@ function ProjectCard({ p, i }: { p: { title: string; description: string; tech: 
         }}>
           {/* Image */}
           <div style={{
-            height: '220px', overflow: 'hidden', position: 'relative',
+            height: '220px', overflow: 'hidden', position: 'relative', flexShrink: 0,
             background: imgErr ? GRADIENTS[i % GRADIENTS.length] : undefined,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
@@ -468,6 +459,27 @@ function ProjectCard({ p, i }: { p: { title: string; description: string; tech: 
               position: 'absolute', inset: 0,
               background: 'linear-gradient(to top, rgba(4,6,15,0.85) 0%, transparent 55%)',
             }} />
+
+            {/* In Progress Badge */}
+            {p.inProgress && (
+              <div style={{
+                position: 'absolute', top: '12px', left: '12px',
+                background: 'rgba(234, 179, 8, 0.15)',
+                color: '#eab308',
+                border: '1px solid rgba(234, 179, 8, 0.3)',
+                padding: '4px 10px',
+                borderRadius: '6px',
+                fontSize: '0.7rem',
+                fontWeight: 700,
+                letterSpacing: '0.05em',
+                backdropFilter: 'blur(4px)',
+                textTransform: 'uppercase',
+                display: 'flex', alignItems: 'center', gap: '6px'
+              }}>
+                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#eab308', boxShadow: '0 0 8px #eab308' }} />
+                {lang === 'es' ? 'En desarrollo' : 'In Progress'}
+              </div>
+            )}
 
             {/* Hover actions */}
             <AnimatePresence>
@@ -502,14 +514,14 @@ function ProjectCard({ p, i }: { p: { title: string; description: string; tech: 
           </div>
 
           {/* Content */}
-          <div style={{ padding: '22px 24px 26px' }}>
+          <div style={{ padding: '22px 24px 26px', flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
             <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '8px' }}>
               {p.title}
             </h3>
             <p style={{ fontSize: '0.83rem', color: 'var(--text-muted)', lineHeight: 1.65, marginBottom: '16px' }}>
               {p.description}
             </p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+            <div style={{ marginTop: 'auto', display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
               {p.tech.map((t) => (
                 <span key={t} style={{
                   fontSize: '0.68rem', fontWeight: 500, fontFamily: 'var(--font-mono)',
