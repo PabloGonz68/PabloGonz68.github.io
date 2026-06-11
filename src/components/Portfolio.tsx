@@ -400,7 +400,7 @@ const GRADIENTS = [
 ]
 
 const PROJECTS_BASE = [
-  { tech: ['React', 'Spring Boot', 'TypeScript', 'PostgreSQL', 'Docker'], image: '/projects/togethr.webp', github: 'https://github.com/PabloGonz68/Togethr', demo: 'https://proyecto-togethr-v1.vercel.app' },
+  { tech: ['React', 'Spring Boot', 'TypeScript', 'PostgreSQL', 'Docker'], image: 'projects/togethr.webp', github: 'https://github.com/PabloGonz68/Proyecto-Togethr-v1', demo: 'https://proyecto-togethr-v1.vercel.app' },
   { tech: ['React', 'Spring Boot', 'Java', 'MariaDB', 'Tailwind CSS'], image: '/projects/hospeda.webp', github: '#', demo: '#', inProgress: true },
   { tech: ['Java', 'MySQL', 'Swing'], image: '/projects/MixPlace.webp', github: 'https://github.com/PabloGonz68/MixPlace1.0', demo: '#' },
   { tech: ['Java', 'Android Studio', 'SQLite'], image: '/projects/unitidy (2).webp', github: 'https://github.com/PabloGonz68/UniTidy', demo: '#' },
