@@ -818,7 +818,7 @@ function PortfolioContent() {
 
   const dlCV = () => {
     const a = document.createElement('a')
-    a.href = '/assets/cv/CV Pablo González Silva.pdf'
+    a.href = 'assets/cv/CV_Pablo_González_Silva-F.pdf'
     a.download = 'CV Pablo González Silva.pdf'
     a.click()
   }
