@@ -45,6 +45,10 @@ export const translations = {
       sub: 'Algunos de mis trabajos más destacados',
       list: [
         {
+          title: 'Detector de Phishing',
+          description: 'Una plataforma Full-Stack diseñada bajo principios DevSecOps para analizar correos electrónicos en tiempo real y detectar ataques de Phishing e Ingeniería Social. Combina un motor de Inteligencia Artificial (Llama 3.1) mediante ingeniería de prompts defensiva, protegido por un backend robusto en Spring Boot con Rate Limiting, y una interfaz de usuario inmersiva con animaciones 3D.',
+        },
+        {
           title: 'Togethr',
           description: 'Plataforma web Full-Stack para gestión de tareas y planes con autenticación JWT segura. Destaca por su sólida arquitectura cliente-servidor construida con Java Spring Boot y React.',
         },
@@ -262,6 +266,10 @@ export const translations = {
       title: 'Projects',
       sub: 'Some of my most notable works',
       list: [
+        {
+          title: 'Phishing Detector',
+          description: 'A Full-Stack platform designed under DevSecOps principles to analyze emails in real-time and detect Phishing and Social Engineering attacks. It combines an Artificial Intelligence engine (Llama 3.1) using defensive prompt engineering, protected by a robust Spring Boot backend with Rate Limiting, and an immersive user interface with 3D animations.',
+        },
         {
           title: 'Togethr',
           description: 'Full-Stack web platform for task and plan management with secure JWT authentication. Features a robust client-server architecture built with Java Spring Boot and React.',

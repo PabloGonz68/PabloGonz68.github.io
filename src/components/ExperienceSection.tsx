@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Briefcase, MapPin, Calendar, ChevronDown, ExternalLink } from 'lucide-react'
+import { Briefcase, MapPin, Calendar, ChevronDown, ExternalLink, Code, Server } from 'lucide-react'
 import ScrollReveal from './ScrollReveal'
 import { useApp } from '../lib/AppContext'
 
 // Icons array matching the order of experiences in translations
-const EXP_ICONS = ['🚀', '⚙️']
+const EXP_ICONS = [Code, Server]
 
 // ── Tech pill ─────────────────────────────────────────────────
 const TECH_COLORS: Record<string, { text: string; bg: string; border: string }> = {
@@ -64,7 +64,10 @@ function ExpCard({ exp, i }: { exp: any; i: number }) {
               cursor: 'default',
             }}
           >
-            {exp.icon}
+            {(() => {
+              const Icon = exp.icon
+              return <Icon size={20} style={{ color: exp.color }} />
+            })()}
           </motion.div>
         </div>
 
@@ -84,7 +87,10 @@ function ExpCard({ exp, i }: { exp: any; i: number }) {
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: '1rem', marginTop: '4px',
             }}>
-              {exp.icon}
+              {(() => {
+                const Icon = exp.icon
+                return <Icon size={16} style={{ color: exp.color }} />
+              })()}
             </div>
           </div>
           <div className="flex-1">

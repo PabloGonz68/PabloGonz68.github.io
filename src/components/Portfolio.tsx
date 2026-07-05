@@ -400,13 +400,33 @@ const GRADIENTS = [
 ]
 
 const PROJECTS_BASE = [
+  {
+    tech: ['React', 'Astro', 'Spring Boot', 'Java', 'Llama 3.1'],
+    image: '/projects/phishing.webp',
+    github: [
+      { url: 'https://github.com/PabloGonz68/Frontend-Phishing-Detector', label: 'GitHub (Frontend)' },
+      { url: 'https://github.com/PabloGonz68/Backend-Phishing-Detector', label: 'GitHub (Backend)' },
+    ],
+    demo: 'https://frontend-phishing-detector.vercel.app/',
+  },
   { tech: ['React', 'Spring Boot', 'TypeScript', 'PostgreSQL', 'Docker'], image: 'projects/togethr.webp', github: 'https://github.com/PabloGonz68/Proyecto-Togethr-v1', demo: 'https://proyecto-togethr-v1.vercel.app' },
   { tech: ['React', 'Spring Boot', 'Java', 'MariaDB', 'Tailwind CSS'], image: '/projects/hospeda.webp', github: '#', demo: '#', inProgress: true },
   { tech: ['Java', 'MySQL', 'Swing'], image: '/projects/MixPlace.webp', github: 'https://github.com/PabloGonz68/MixPlace1.0', demo: '#' },
   { tech: ['Java', 'Android Studio', 'SQLite'], image: '/projects/unitidy (2).webp', github: 'https://github.com/PabloGonz68/UniTidy', demo: '#' },
 ]
 
-function ProjectCard({ p, i }: { p: { title: string; description: string; tech: string[]; image: string; github: string; demo: string; inProgress?: boolean }; i: number }) {
+function ProjectCard({ p, i }: {
+  p: {
+    title: string;
+    description: string;
+    tech: string[];
+    image: string;
+    github: string | { url: string; label: string }[];
+    demo: string;
+    inProgress?: boolean;
+  };
+  i: number;
+}) {
   const [h, setH] = useState(false)
   const [imgErr, setImgErr] = useState(false)
   const { lang } = useApp()
@@ -416,6 +436,7 @@ function ProjectCard({ p, i }: { p: { title: string; description: string; tech: 
     MySQL: '#38bdf8', 'Tailwind CSS': '#818cf8', Angular: '#f43f5e',
     '.NET Core': '#a78bfa', 'SQL Server': '#60a5fa', Docker: '#38bdf8',
     SQLite: '#fbbf24', PHP: '#a78bfa', Laravel: '#fb7185', 'Android Studio': '#4ade80',
+    Astro: '#ff7e33', 'Llama 3.1': '#d946ef',
   }
 
   return (
@@ -491,10 +512,12 @@ function ProjectCard({ p, i }: { p: { title: string; description: string; tech: 
                   style={{ position: 'absolute', top: '12px', right: '12px', display: 'flex', gap: '8px' }}
                 >
                   {[
-                    { href: p.github, icon: Github, label: 'GitHub' },
+                    ...(Array.isArray(p.github)
+                      ? p.github.map(g => ({ href: g.url, icon: Github, label: g.label }))
+                      : [{ href: p.github, icon: Github, label: 'GitHub' }]),
                     { href: p.demo, icon: ExternalLink, label: 'Demo' },
                   ].map(({ href, icon: Icon, label }) => href !== '#' && (
-                    <a key={label} href={href} target="_blank" rel="noopener noreferrer">
+                    <a key={label} href={href} target="_blank" rel="noopener noreferrer" title={label}>
                       <motion.div
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.95 }}
@@ -629,15 +652,14 @@ function CoinAvatar() {
       initial={{ opacity: 0, scale: 0.8 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-      style={{ marginBottom: '28px' }}
+      className="mb-4 md:mb-7"
     >
       <motion.div
         onHoverStart={handleHoverStart}
         onHoverEnd={handleHoverEnd}
+        className="w-[110px] h-[110px] md:w-[148px] md:h-[148px]"
         style={{
           position: 'relative',
-          width: '148px',
-          height: '148px',
           margin: '0 auto',
           cursor: 'pointer',
         }}
@@ -664,13 +686,14 @@ function CoinAvatar() {
           }}
         />
 
-        <div style={{
-          position: 'relative',
-          width: '148px',
-          height: '148px',
-          perspective: '600px',
-          zIndex: 1,
-        }}>
+        <div
+          className="w-[110px] h-[110px] md:w-[148px] md:h-[148px]"
+          style={{
+            position: 'relative',
+            perspective: '600px',
+            zIndex: 1,
+          }}
+        >
           <motion.div
             animate={{ rotateY: rotation }}
             transition={{
@@ -769,6 +792,7 @@ function PortfolioContent() {
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
   const { scrollYProgress } = useScroll()
   const heroY = useTransform(scrollYProgress, [0, 0.3], ['0%', '30%'])
+  const scrollOpacity = useTransform(scrollYProgress, [0, 0.08], [1, 0])
   const scaleX = useSpring(scrollYProgress, { stiffness: 90, damping: 30 })
   const tw = useTypewriter(t.hero.typewriterTexts as unknown as string[])
 
@@ -777,7 +801,7 @@ function PortfolioContent() {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     // Honeypot check: si un bot llena este campo oculto, simulamos éxito y no enviamos nada.
     if (form._honey) {
       setStatus('sent')
@@ -802,7 +826,7 @@ function PortfolioContent() {
           message: form.message.trim()
         })
       })
-      
+
       if (response.ok) {
         setStatus('sent')
         setForm({ name: '', email: '', subject: '', message: '', _honey: '' })
@@ -849,8 +873,8 @@ function PortfolioContent() {
       <section id="hero" style={{
         position: 'relative', minHeight: '100vh',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        overflow: 'hidden', paddingTop: '60px',
-      }}>
+        overflowX: 'hidden', paddingTop: '60px',
+      }} className="pb-16 md:pb-0">
         {/* Grid bg */}
         <div className="grid-bg" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} />
 
@@ -872,11 +896,12 @@ function PortfolioContent() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5, duration: 0.5 }}
+            className="mb-3 md:mb-[18px]"
             style={{
               display: 'inline-flex', alignItems: 'center', gap: '7px',
               background: 'var(--card-bg)',
               border: '1px solid var(--card-border)',
-              borderRadius: '999px', padding: '5px 14px', marginBottom: '18px',
+              borderRadius: '999px', padding: '5px 14px',
             }}
           >
             <motion.div
@@ -894,11 +919,12 @@ function PortfolioContent() {
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.55, duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
+            className="mb-2.5 md:mb-[14px]"
             style={{
               fontFamily: 'var(--font-sans)', fontWeight: 900,
               fontSize: 'clamp(2.4rem, 6vw, 4.5rem)',
               color: 'var(--text-primary)', letterSpacing: '-0.035em',
-              lineHeight: 1.08, marginBottom: '14px',
+              lineHeight: 1.08,
             }}
           >
             Pablo González <span className="text-gradient">Silva</span>
@@ -909,9 +935,10 @@ function PortfolioContent() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.8 }}
+            className="mb-4 md:mb-[20px]"
             style={{
               fontFamily: 'var(--font-mono)', fontSize: 'clamp(0.9rem, 2vw, 1.1rem)',
-              color: '#60a5fa', fontWeight: 500, minHeight: '1.6em', marginBottom: '20px',
+              color: '#60a5fa', fontWeight: 500, minHeight: '1.6em',
             }}
           >
             {tw}<span className="cursor" />
@@ -922,10 +949,11 @@ function PortfolioContent() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1, duration: 0.6 }}
+            className="mx-auto mb-6 md:mb-9"
             style={{
               fontSize: 'clamp(0.88rem, 1.8vw, 0.97rem)',
               color: 'var(--text-muted)', maxWidth: '540px',
-              margin: '0 auto 36px', lineHeight: 1.75,
+              lineHeight: 1.75,
             }}
           >
             {t.hero.description}
@@ -936,7 +964,8 @@ function PortfolioContent() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.15, duration: 0.6 }}
-            style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '44px' }}
+            className="mb-8 md:mb-11"
+            style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}
           >
             {[
               {
@@ -954,10 +983,11 @@ function PortfolioContent() {
                 onClick={action}
                 whileHover={{ scale: 1.04, y: -2 }}
                 whileTap={{ scale: 0.97 }}
+                className="px-5 py-2.5 md:px-6 md:py-3 text-xs md:text-sm"
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: '7px',
-                  padding: '11px 26px', borderRadius: '999px',
-                  fontFamily: 'var(--font-sans)', fontSize: '0.875rem', fontWeight: 600,
+                  borderRadius: '999px',
+                  fontFamily: 'var(--font-sans)', fontWeight: 600,
                   cursor: 'pointer',
                   background: primary
                     ? 'linear-gradient(135deg, #4f8bff, #3b82f6)'
@@ -967,7 +997,7 @@ function PortfolioContent() {
                     : '1px solid var(--card-border)',
                   color: primary ? 'white' : 'var(--text-muted)',
                   boxShadow: primary ? '0 4px 20px rgba(79,139,255,0.3)' : 'none',
-                  transition: 'box-shadow 0.2s',
+                  transition: 'box-shadow 0.2s, transform 0.2s',
                 }}
               >
                 {icon}{label}
@@ -1013,20 +1043,31 @@ function PortfolioContent() {
 
         {/* Scroll indicator */}
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 2 }}
-          style={{ position: 'absolute', bottom: '24px', left: '50%', transform: 'translateX(-50%)' }}
+          style={{
+            position: 'absolute',
+            bottom: '24px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            opacity: scrollOpacity,
+            pointerEvents: 'none',
+          }}
+          className="hidden md:block"
         >
           <motion.div
-            animate={{ y: [0, 7, 0] }}
-            transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px' }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 2, duration: 0.6 }}
           >
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.58rem', color: 'var(--text-subtle)', letterSpacing: '0.15em' }}>
-              {t.hero.scroll}
-            </span>
-            <ChevronDown size={16} style={{ color: 'rgba(79,139,255,0.5)' }} />
+            <motion.div
+              animate={{ y: [0, 7, 0] }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px' }}
+            >
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.58rem', color: 'var(--text-subtle)', letterSpacing: '0.15em' }}>
+                {t.hero.scroll}
+              </span>
+              <ChevronDown size={16} style={{ color: 'rgba(79,139,255,0.5)' }} />
+            </motion.div>
           </motion.div>
         </motion.div>
       </section>
