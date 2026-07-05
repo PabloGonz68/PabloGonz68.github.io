@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, lazy, Suspense } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import HackerLaptop from './HackerLaptop'
+const HackerLaptop = lazy(() => import('./HackerLaptop'))
 import { useApp } from '../lib/AppContext'
 
 // ── Inline SVG Icons ─────────────────────────────────────────
@@ -577,7 +577,9 @@ export default function CyberSection() {
             }}>
               // writeups terminal
             </div>
-            <HackerLaptop />
+            <Suspense fallback={<div style={{ width: '320px', height: '300px' }} />}>
+              <HackerLaptop />
+            </Suspense>
             <p style={{
               fontFamily: 'var(--font-mono)', fontSize: '0.65rem',
               color: 'var(--text-subtle)', textAlign: 'center', marginTop: '4px',

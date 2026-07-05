@@ -16,6 +16,9 @@ export default defineConfig({
       },
     },
       plugins: [tailwindcss()],
+      build: {
+        chunkSizeWarningLimit: 1200,
+      },
 	},
 
   integrations: [react()],
