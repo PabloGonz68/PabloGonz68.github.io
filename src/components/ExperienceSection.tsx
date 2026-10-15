@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Briefcase, MapPin, Calendar, ChevronDown, ExternalLink, Code, Server } from 'lucide-react'
+import { Briefcase, MapPin, Calendar, ChevronDown, ExternalLink, Code, Server, GraduationCap } from 'lucide-react'
 import ScrollReveal from './ScrollReveal'
 import { useApp } from '../lib/AppContext'
 
 // Icons array matching the order of experiences in translations
-const EXP_ICONS = [Code, Server]
+const EXP_ICONS = [GraduationCap, Code, Server]
 
 // ── Tech pill ─────────────────────────────────────────────────
 const TECH_COLORS: Record<string, { text: string; bg: string; border: string }> = {
@@ -19,6 +19,11 @@ const TECH_COLORS: Record<string, { text: string; bg: string; border: string }> 
   'Spring Security': { text: '#86efac', bg: 'rgba(134,239,172,0.1)', border: 'rgba(134,239,172,0.25)' },
   'Visual Basic .NET':{ text: '#c084fc', bg: 'rgba(192,132,252,0.1)',border: 'rgba(192,132,252,0.25)' },
   'SQL Server':      { text: '#60a5fa', bg: 'rgba(96,165,250,0.1)',  border: 'rgba(96,165,250,0.25)' },
+  'JDBC':            { text: '#f59e0b', bg: 'rgba(245,158,11,0.1)',  border: 'rgba(245,158,11,0.25)' },
+  'Git':             { text: '#fb923c', bg: 'rgba(251,146,60,0.1)',  border: 'rgba(251,146,60,0.25)' },
+  'Maven':           { text: '#e879f9', bg: 'rgba(232,121,249,0.1)', border: 'rgba(232,121,249,0.25)' },
+  'Gradle':          { text: '#a3e635', bg: 'rgba(163,230,53,0.1)',  border: 'rgba(163,230,53,0.25)' },
+  'UML':             { text: '#67e8f9', bg: 'rgba(103,232,249,0.1)', border: 'rgba(103,232,249,0.25)' },
 }
 
 function TechPill({ name }: { name: string }) {
@@ -274,11 +279,27 @@ function SH({ label, title, sub }: { label: string; title: string; sub: string }
 export default function ExperienceSection() {
   const { t } = useApp()
 
+  const EXP_DATA = [
+    {
+      current: true,
+      tech: ['Java', 'JDBC', 'Git', 'Maven', 'Gradle', 'UML'],
+      color: '#f59e0b',
+    },
+    {
+      current: false,
+      tech: ['Astro', 'React', 'JavaScript', 'Tailwind CSS', 'PHP'],
+      color: '#4f8bff',
+    },
+    {
+      current: false,
+      tech: ['Java', 'Spring Boot', 'Spring Security', 'Visual Basic .NET', 'SQL Server'],
+      color: '#22d3ee',
+    },
+  ]
+
   const EXPERIENCES = t.experience.list.map((exp, i) => ({
     ...exp,
-    current: i === 0 ? false : false, // Update if needed
-    tech: i === 0 ? ['Astro', 'React', 'JavaScript', 'Tailwind CSS', 'PHP'] : ['Java', 'Spring Boot', 'Spring Security', 'Visual Basic .NET', 'SQL Server'],
-    color: i === 0 ? '#4f8bff' : '#22d3ee',
+    ...EXP_DATA[i],
     icon: EXP_ICONS[i],
   }))
 

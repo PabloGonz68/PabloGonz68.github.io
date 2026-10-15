@@ -10,6 +10,11 @@ const TAG_COLORS: Record<string, string> = {
   'Spring Boot':  '#4ade80',
   'REST API':     '#60a5fa',
   'Backend':      '#c084fc',
+  'IA':           '#f59e0b',
+  'AI':           '#f59e0b',
+  'Agentes':      '#fb923c',
+  'Agents':       '#fb923c',
+  'Python':       '#facc15',
 }
 
 const EDU_EXTRAS = [
@@ -19,6 +24,7 @@ const EDU_EXTRAS = [
 ]
 
 const CERT_EXTRAS = [
+  { platform: 'BIG school', color: '#f59e0b', tags: ['IA', 'AI', 'Agentes', 'Agents'] },
   { platform: 'Udemy', color: '#f97316', tags: ['Java', 'Spring Boot', 'REST API'] },
   { platform: 'Udemy', color: '#4ade80', tags: ['Java', 'Spring Boot', 'Backend'] },
 ]

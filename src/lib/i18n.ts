@@ -103,6 +103,21 @@ export const translations = {
       clickHint: '· Haz click en cada tarjeta para expandir/contraer ·',
       list: [
         {
+          role: 'Docente Técnico de Desarrollo Software (Java)',
+          type: 'Jornada parcial',
+          company: 'Fundación Integralia DKV',
+          location: 'Cádiz, Andalucía, España · En remoto',
+          period: 'Septiembre 2026 — Actualidad',
+          description: [
+            'Docencia en el programa Laboratorio Rural Digital (LRD+) impulsado por la Fundación Integralia DKV y Fundación Mapfre, con capacitación intensiva en desarrollo de software backend.',
+            'Ingeniería del Software: ciclo de vida, análisis de requerimientos (IEEE 830) y diseño arquitectónico (UML, diagramas E/R).',
+            'Desarrollo Backend: fundamentos de compilación, gestión de memoria en la JVM y diseño algorítmico.',
+            'OOP en Java: herencia avanzada, polimorfismo, encapsulamiento e interfaces.',
+            'Persistencia y Bases de Datos: diseño de acceso a datos con JDBC, gestión de cursores y transacciones con SGBD.',
+            'Stack de herramientas: control de versiones distribuido (Git) y automatización de builds y dependencias (Maven, Gradle).',
+          ],
+        },
+        {
           role: 'Desarrollador Full Stack',
           type: 'Prácticas Profesionales',
           company: 'Agencia Adhoc',
@@ -159,6 +174,12 @@ export const translations = {
         },
       ],
       certList: [
+        {
+          title: 'Curso de Desarrollo con IA: Programa con Agentes',
+          issuer: 'BIG school',
+          date: 'Junio 2026',
+          credentialId: 'h8wg01yu',
+        },
         {
           title: 'Desarrollo de Servicios Web REST en Java con Spring Boot',
           date: 'Marzo 2024',
@@ -325,6 +346,21 @@ export const translations = {
       clickHint: '· Click each card to expand/collapse ·',
       list: [
         {
+          role: 'Technical Instructor in Software Development (Java)',
+          type: 'Part-time',
+          company: 'Fundación Integralia DKV',
+          location: 'Cádiz, Andalusia, Spain · Remote',
+          period: 'September 2026 — Present',
+          description: [
+            'Teaching in the Rural Digital Laboratory (LRD+) program promoted by Fundación Integralia DKV and Fundación Mapfre, delivering intensive backend software development training.',
+            'Software Engineering: software lifecycle, requirements analysis (IEEE 830) and architectural design (UML, E/R diagrams).',
+            'Backend Development: compilation fundamentals, JVM memory management and algorithmic design.',
+            'OOP in Java: advanced inheritance, polymorphism, encapsulation and interfaces.',
+            'Persistence & Databases: low-level data access design with JDBC, cursor management and transactions with DBMS.',
+            'Tooling stack: distributed version control (Git) and build/dependency automation (Maven, Gradle).',
+          ],
+        },
+        {
           role: 'Full Stack Developer',
           type: 'Professional Internship',
           company: 'Agencia Adhoc',
@@ -381,6 +417,12 @@ export const translations = {
         },
       ],
       certList: [
+        {
+          title: 'AI Development Course: Programming with Agents',
+          issuer: 'BIG school',
+          date: 'June 2026',
+          credentialId: 'h8wg01yu',
+        },
         {
           title: 'REST Web Services Development in Java with Spring Boot',
           date: 'March 2024',
